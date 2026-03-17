@@ -31,7 +31,14 @@ export async function POST() {
       const { error: variantsError } = await supabaseAdmin
         .from('product_variants')
         .upsert(
-          batch.map((v) => ({ ...v, synced_at: new Date().toISOString() })),
+          batch.map((v) => ({
+            ...v,
+            synced_at: new Date().toISOString(),
+            // Tell the trigger this change came from Shopify sync.
+            // cost / virtual_inventory / physical_inventory are intentionally
+            // NOT included here so they are never overwritten by sync.
+            inventory_changed_by: 'shopify_sync',
+          })),
           { onConflict: 'variant_id' }
         )
       if (variantsError) throw new Error(`Variants upsert failed (batch ${i}): ${variantsError.message}`)

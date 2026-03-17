@@ -5,39 +5,39 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  ChevronRight as ChevronRightSm,
   Package,
   X,
   AlertTriangle,
+  Pencil,
+  Check,
+  Boxes,
 } from "lucide-react";
 
-// ---- Types ----
+// ── Types ──────────────────────────────────────────────────────────────────
 
-interface Variant {
+interface ProductInfo {
+  product_id: string;
+  title: string;
+  image_url: string;
+  vendor: string;
+  product_type: string;
+  status: string;
+}
+
+interface VariantRow {
   variant_id: string;
   title: string;
   price: number;
   sku: string;
   inventory_quantity: number;
+  cost: number;
+  virtual_inventory: number;
+  physical_inventory: number;
+  inventory_remark: string | null;
+  products: ProductInfo;
 }
 
-interface Product {
-  product_id: string;
-  title: string;
-  handle: string;
-  vendor: string;
-  product_type: string;
-  tags: string;
-  status: string;
-  total_inventory: number;
-  total_variants: number;
-  image_url: string;
-  synced_at: string;
-  product_variants: Variant[];
-}
-
-// ---- Helpers ----
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -48,191 +48,394 @@ function formatPrice(price: number) {
 }
 
 function StockBadge({ qty }: { qty: number }) {
-  if (qty === 0) {
+  if (qty <= 0)
     return (
-      <span
-        className="text-xs font-semibold px-2 py-0.5 rounded-full"
-        style={{ backgroundColor: "#fff0f0", color: "#e05252" }}
-      >
+      <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#fff0f0", color: "#e05252" }}>
         Out of stock
       </span>
     );
-  }
-  if (qty < 5) {
+  if (qty < 5)
     return (
-      <span
-        className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-        style={{ backgroundColor: "#fff3e8", color: "#d4600a" }}
-      >
+      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#fff3e8", color: "#d4600a" }}>
         <AlertTriangle size={10} />
         Low · {qty}
       </span>
     );
-  }
   return (
-    <span
-      className="text-xs font-medium px-2 py-0.5 rounded-full"
-      style={{ backgroundColor: "#f0faf4", color: "#27a559" }}
-    >
+    <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: "#f0faf4", color: "#27a559" }}>
       {qty} in stock
     </span>
   );
 }
 
-// ---- Product Row ----
+// ── Inventory Update Modal ─────────────────────────────────────────────────
 
-function ProductRow({ product }: { product: Product }) {
-  const [expanded, setExpanded] = useState(false);
-  const hasMultipleVariants =
-    product.product_variants.length > 1 ||
-    (product.product_variants.length === 1 &&
-      product.product_variants[0].title !== "Default Title");
-  const isExpandable = hasMultipleVariants;
+interface InventoryModalProps {
+  variant: VariantRow;
+  onClose: () => void;
+  onSaved: () => void;
+}
 
-  // For single-variant products, show that variant's price/sku directly
-  const singleVariant =
-    product.product_variants.length === 1 ? product.product_variants[0] : null;
-  const priceDisplay = singleVariant
-    ? formatPrice(singleVariant.price)
-    : product.product_variants.length > 0
-    ? `${formatPrice(Math.min(...product.product_variants.map((v) => v.price)))} – ${formatPrice(Math.max(...product.product_variants.map((v) => v.price)))}`
-    : "—";
-  const skuDisplay = singleVariant?.sku || "—";
+function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
+  const [newVirtual, setNewVirtual]   = useState(variant.virtual_inventory);
+  const [newPhysical, setNewPhysical] = useState(variant.physical_inventory);
+  const [remark, setRemark]           = useState("");
+  const [saving, setSaving]           = useState(false);
+  const [error, setError]             = useState("");
+
+  const newTotal  = newVirtual + newPhysical;
+  const hasChange = newVirtual !== variant.virtual_inventory || newPhysical !== variant.physical_inventory;
+
+  function clampInt(val: number) {
+    return Math.max(0, Math.floor(val));
+  }
+
+  async function handleSave() {
+    if (!hasChange) return;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/products/${variant.variant_id}/inventory`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ virtual_inventory: newVirtual, physical_inventory: newPhysical, remark }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error ?? "Update failed");
+      }
+      onSaved();
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const productTitle = variant.products.title;
+  const variantLabel = variant.title !== "Default Title" ? variant.title : null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl overflow-hidden"
+        style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between px-6 pt-5 pb-4" style={{ borderBottom: "1px solid #f0eae6" }}>
+          <div>
+            <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>Update Inventory</h3>
+            <p className="text-xs mt-0.5" style={{ color: "#8a8a8a" }}>
+              {productTitle}
+              {variantLabel && <> · <span style={{ color: "#d57282" }}>{variantLabel}</span></>}
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#f5f0ed]">
+            <X size={16} style={{ color: "#8a8a8a" }} />
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-5">
+          {/* Current snapshot */}
+          <div className="rounded-xl px-4 py-3 space-y-2" style={{ backgroundColor: "#faf7f5", border: "1px solid #f0eae6" }}>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8a8a8a" }}>Current</p>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Virtual",  value: variant.virtual_inventory },
+                { label: "Physical", value: variant.physical_inventory },
+                { label: "Total",    value: variant.inventory_quantity },
+              ].map(({ label, value }) => (
+                <div key={label} className="text-center">
+                  <p className="text-lg font-semibold" style={{ color: "#525252" }}>{value}</p>
+                  <p className="text-xs" style={{ color: "#8a8a8a" }}>{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Editable new values */}
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8a8a8a" }}>New Values</p>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Virtual */}
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "#525252" }}>Virtual</label>
+                <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "1px solid #E2E2E2" }}>
+                  <button
+                    onClick={() => setNewVirtual((v) => clampInt(v - 1))}
+                    className="px-3 py-2 text-lg font-light hover:bg-[#f5f0ed] transition-colors"
+                    style={{ color: "#d57282" }}
+                  >−</button>
+                  <input
+                    type="number"
+                    min={0}
+                    value={newVirtual}
+                    onChange={(e) => setNewVirtual(clampInt(parseInt(e.target.value, 10) || 0))}
+                    className="flex-1 text-center text-sm font-semibold outline-none bg-transparent py-2"
+                    style={{ color: "#525252" }}
+                  />
+                  <button
+                    onClick={() => setNewVirtual((v) => v + 1)}
+                    className="px-3 py-2 text-lg font-light hover:bg-[#f5f0ed] transition-colors"
+                    style={{ color: "#d57282" }}
+                  >+</button>
+                </div>
+              </div>
+
+              {/* Physical */}
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "#525252" }}>Physical</label>
+                <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "1px solid #E2E2E2" }}>
+                  <button
+                    onClick={() => setNewPhysical((v) => clampInt(v - 1))}
+                    className="px-3 py-2 text-lg font-light hover:bg-[#f5f0ed] transition-colors"
+                    style={{ color: "#d57282" }}
+                  >−</button>
+                  <input
+                    type="number"
+                    min={0}
+                    value={newPhysical}
+                    onChange={(e) => setNewPhysical(clampInt(parseInt(e.target.value, 10) || 0))}
+                    className="flex-1 text-center text-sm font-semibold outline-none bg-transparent py-2"
+                    style={{ color: "#525252" }}
+                  />
+                  <button
+                    onClick={() => setNewPhysical((v) => v + 1)}
+                    className="px-3 py-2 text-lg font-light hover:bg-[#f5f0ed] transition-colors"
+                    style={{ color: "#d57282" }}
+                  >+</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Calculated total */}
+            <div className="flex items-center justify-between px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#f9e8eb" }}>
+              <span className="text-xs font-medium" style={{ color: "#d57282" }}>New Total</span>
+              <span className="text-sm font-bold" style={{ color: "#d57282" }}>{newTotal}</span>
+            </div>
+          </div>
+
+          {/* Remarks */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#525252" }}>
+              Remarks <span style={{ color: "#8a8a8a" }}>(optional)</span>
+            </label>
+            <textarea
+              rows={2}
+              maxLength={500}
+              placeholder="e.g. Received new shipment, pre-added for incoming PO…"
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+              className="w-full text-sm rounded-xl px-3 py-2.5 outline-none resize-none placeholder:text-[#c0b8b8]"
+              style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#ffffff" }}
+            />
+            <p className="text-xs mt-1 text-right" style={{ color: "#c0b8b8" }}>{remark.length}/500</p>
+          </div>
+
+          {error && <p className="text-xs" style={{ color: "#e05252" }}>{error}</p>}
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+              style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#ffffff" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!hasChange || saving}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={
+                hasChange && !saving
+                  ? { backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }
+                  : { backgroundColor: "#f0e8ea", color: "#c0a0a8", cursor: "not-allowed" }
+              }
+            >
+              {saving ? "Saving…" : "Update"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Inline cost editor ─────────────────────────────────────────────────────
+
+function CostCell({ variantId, initialCost, onSaved }: { variantId: string; initialCost: number; onSaved: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue]     = useState(String(initialCost));
+  const [saving, setSaving]   = useState(false);
+  const inputRef              = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing) inputRef.current?.select(); }, [editing]);
+
+  async function save() {
+    const cost = parseFloat(value);
+    if (isNaN(cost) || cost < 0) { setValue(String(initialCost)); setEditing(false); return; }
+    setSaving(true);
+    try {
+      await fetch(`/api/products/${variantId}/cost`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cost }),
+      });
+      onSaved();
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1">
+        <span className="text-xs" style={{ color: "#8a8a8a" }}>₹</span>
+        <input
+          ref={inputRef}
+          type="number"
+          min={0}
+          step={0.01}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={save}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") save();
+            if (e.key === "Escape") { setValue(String(initialCost)); setEditing(false); }
+          }}
+          className="w-16 text-xs font-medium outline-none rounded px-1 py-0.5"
+          style={{ border: "1px solid #d57282", color: "#525252" }}
+          disabled={saving}
+          autoFocus
+        />
+        <button onClick={save} disabled={saving}>
+          <Check size={12} style={{ color: "#27a559" }} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button onClick={() => { setValue(String(initialCost)); setEditing(true); }} className="flex items-center gap-1 group">
+      <span className="text-xs font-medium" style={{ color: "#525252" }}>{formatPrice(initialCost)}</span>
+      <Pencil size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#d57282" }} />
+    </button>
+  );
+}
+
+// ── Table row ──────────────────────────────────────────────────────────────
+
+const COL = "40px 1fr 110px 110px 110px 110px 36px";
+
+function VariantTableRow({ variant, onRefresh }: { variant: VariantRow; onRefresh: () => void }) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const p = variant.products;
 
   return (
     <>
       <div
-        className={`grid items-center px-5 py-3.5 transition-colors duration-100 ${
-          isExpandable ? "cursor-pointer hover:bg-[#fffbf6]" : "hover:bg-[#fffbf6]"
-        }`}
-        style={{ gridTemplateColumns: "44px 1fr 160px 100px 80px 110px 32px" }}
-        onClick={() => isExpandable && setExpanded((e) => !e)}
+        className="grid items-center px-5 py-3 hover:bg-[#fffbf6] transition-colors duration-100"
+        style={{ gridTemplateColumns: COL }}
       >
         {/* Image */}
-        <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0" style={{ backgroundColor: "#f9e8eb" }}>
-          {product.image_url ? (
-            <img
-              src={product.image_url}
-              alt={product.title}
-              className="w-full h-full object-cover"
-            />
+        <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0" style={{ backgroundColor: "#f9e8eb" }}>
+          {p.image_url ? (
+            <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Package size={14} style={{ color: "#d57282" }} />
+              <Package size={12} style={{ color: "#d57282" }} />
             </div>
           )}
         </div>
 
-        {/* Title + meta */}
+        {/* Product + variant name */}
         <div className="min-w-0 px-3">
-          <p className="text-sm font-medium truncate" style={{ color: "#525252" }}>
-            {product.title}
-          </p>
-          <p className="text-xs truncate" style={{ color: "#8a8a8a" }}>
-            {[product.vendor, product.product_type].filter(Boolean).join(" · ")}
-          </p>
+          <p className="text-sm font-medium truncate" style={{ color: "#525252" }}>{p.title}</p>
+          {variant.title !== "Default Title" && (
+            <p className="text-xs truncate" style={{ color: "#8a8a8a" }}>{variant.title}</p>
+          )}
         </div>
 
-        {/* SKU */}
-        <div className="text-xs font-mono truncate" style={{ color: "#8a8a8a" }}>
-          {skuDisplay}
+        {/* Cost price (editable) */}
+        <div>
+          <CostCell variantId={variant.variant_id} initialCost={variant.cost} onSaved={onRefresh} />
         </div>
 
-        {/* Price */}
-        <div className="text-sm font-medium" style={{ color: "#525252" }}>
-          {priceDisplay}
+        {/* Sale price */}
+        <div className="text-xs font-medium" style={{ color: "#525252" }}>
+          {formatPrice(variant.price)}
         </div>
 
         {/* Stock */}
         <div>
-          <StockBadge qty={product.total_inventory} />
+          <StockBadge qty={variant.inventory_quantity} />
         </div>
 
-        {/* Variants count */}
-        <div className="text-xs" style={{ color: "#8a8a8a" }}>
-          {product.total_variants > 1 ? `${product.total_variants} variants` : ""}
+        {/* V / P split */}
+        <div className="flex gap-1.5">
+          <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: "#f0f4ff", color: "#4a6cf7" }} title="Virtual">
+            V {variant.virtual_inventory}
+          </span>
+          <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: "#f0faf4", color: "#27a559" }} title="Physical">
+            P {variant.physical_inventory}
+          </span>
         </div>
 
-        {/* Expand toggle */}
+        {/* Edit inventory */}
         <div className="flex justify-center">
-          {isExpandable ? (
-            expanded ? (
-              <ChevronDown size={15} style={{ color: "#8a8a8a" }} />
-            ) : (
-              <ChevronRightSm size={15} style={{ color: "#8a8a8a" }} />
-            )
-          ) : null}
+          <button
+            onClick={() => setModalOpen(true)}
+            className="p-1.5 rounded-lg hover:bg-[#f9e8eb] transition-colors"
+            title="Update inventory"
+          >
+            <Boxes size={13} style={{ color: "#d57282" }} />
+          </button>
         </div>
       </div>
 
-      {/* Expanded variants */}
-      {expanded && isExpandable && (
-        <div style={{ backgroundColor: "#fffbf6", borderTop: "1px solid #f0eae6" }}>
-          {product.product_variants.map((v) => (
-            <div
-              key={v.variant_id}
-              className="grid items-center px-5 py-2.5"
-              style={{ gridTemplateColumns: "44px 1fr 160px 100px 80px 110px 32px" }}
-            >
-              {/* Indent spacer */}
-              <div />
-              {/* Variant title */}
-              <div className="px-3">
-                <p className="text-xs font-medium" style={{ color: "#8a8a8a" }}>
-                  {v.title}
-                </p>
-              </div>
-              {/* SKU */}
-              <div className="text-xs font-mono" style={{ color: "#b8a0a0" }}>
-                {v.sku || "—"}
-              </div>
-              {/* Price */}
-              <div className="text-xs font-medium" style={{ color: "#525252" }}>
-                {formatPrice(v.price)}
-              </div>
-              {/* Stock */}
-              <div>
-                <StockBadge qty={v.inventory_quantity} />
-              </div>
-              <div />
-              <div />
-            </div>
-          ))}
-        </div>
+      {modalOpen && (
+        <InventoryModal
+          variant={variant}
+          onClose={() => setModalOpen(false)}
+          onSaved={onRefresh}
+        />
       )}
     </>
   );
 }
 
-// ---- Page ----
+// ── Page ───────────────────────────────────────────────────────────────────
 
 export default function InventoryPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-
-  const [search, setSearch] = useState("");
+  const [variants, setVariants]             = useState<VariantRow[]>([]);
+  const [total, setTotal]                   = useState(0);
+  const [page, setPage]                     = useState(1);
+  const [loading, setLoading]               = useState(true);
+  const [search, setSearch]                 = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [lowStock, setLowStock] = useState(false);
-  const [stockStatus, setStockStatus] = useState<"" | "in_stock" | "out_of_stock">("");
+  const [lowStock, setLowStock]             = useState(false);
+  const [stockStatus, setStockStatus]       = useState<"" | "in_stock" | "out_of_stock">("");
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pageSize = 40;
+  const pageSize   = 50;
   const totalPages = Math.ceil(total / pageSize);
 
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 300);
+    debounceTimer.current = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 300);
     return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [search]);
 
   useEffect(() => { setPage(1); }, [lowStock, stockStatus]);
 
-  const fetchProducts = useCallback(async () => {
+  const fetchVariants = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({
       page: String(page),
@@ -240,33 +443,29 @@ export default function InventoryPage() {
       low_stock: String(lowStock),
       stock_status: stockStatus,
     });
-    const res = await fetch(`/api/products?${params}`);
+    const res  = await fetch(`/api/products?${params}`);
     const data = await res.json();
-    setProducts(data.products ?? []);
+    setVariants(data.variants ?? []);
     setTotal(data.total ?? 0);
     setLoading(false);
   }, [page, debouncedSearch, lowStock, stockStatus]);
 
-  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+  useEffect(() => { fetchVariants(); }, [fetchVariants]);
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1
-          className="text-xl font-semibold"
-          style={{ color: "#525252", fontFamily: "var(--font-poppins), sans-serif" }}
-        >
+        <h1 className="text-xl font-semibold" style={{ color: "#525252", fontFamily: "var(--font-poppins), sans-serif" }}>
           Inventory
         </h1>
         <p className="text-sm mt-0.5" style={{ color: "#8a8a8a" }}>
-          {total > 0 ? `${total} active products` : "Loading…"}
+          {total > 0 ? `${total} variants` : "Loading…"}
         </p>
       </div>
 
-      {/* Search + Filters */}
+      {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
-        {/* Search */}
         <div
           className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1 min-w-[220px] max-w-sm"
           style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2" }}
@@ -280,14 +479,9 @@ export default function InventoryPage() {
             className="flex-1 text-sm bg-transparent outline-none placeholder:text-[#c0b8b8]"
             style={{ color: "#525252" }}
           />
-          {search && (
-            <button onClick={() => setSearch("")}>
-              <X size={13} style={{ color: "#8a8a8a" }} />
-            </button>
-          )}
+          {search && <button onClick={() => setSearch("")}><X size={13} style={{ color: "#8a8a8a" }} /></button>}
         </div>
 
-        {/* In stock / Out of stock toggle */}
         <div className="flex gap-1.5">
           {(["", "in_stock", "out_of_stock"] as const).map((v) => (
             <button
@@ -305,7 +499,6 @@ export default function InventoryPage() {
           ))}
         </div>
 
-        {/* Low stock toggle */}
         <button
           onClick={() => setLowStock((v) => !v)}
           className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-100"
@@ -319,77 +512,68 @@ export default function InventoryPage() {
           Low stock
         </button>
 
-        {/* Clear */}
         {(search || lowStock || stockStatus) && (
           <button
             onClick={() => { setSearch(""); setLowStock(false); setStockStatus(""); }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm"
             style={{ color: "#8a8a8a", border: "1px solid #E2E2E2", backgroundColor: "#ffffff" }}
           >
-            <X size={13} />
-            Clear
+            <X size={13} /> Clear
           </button>
         )}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-4 text-xs" style={{ color: "#8a8a8a" }}>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-2 h-2 rounded-sm" style={{ backgroundColor: "#4a6cf7" }} />
+          V = Virtual (anticipated)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-2 h-2 rounded-sm" style={{ backgroundColor: "#27a559" }} />
+          P = Physical (on-hand)
+        </span>
       </div>
 
       {/* Table */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{
-          backgroundColor: "#ffffff",
-          boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
-          border: "1px solid #E2E2E2",
-        }}
+        style={{ backgroundColor: "#ffffff", boxShadow: "0 2px 16px rgba(213,114,130,0.07)", border: "1px solid #E2E2E2" }}
       >
-        {/* Header */}
         <div
           className="grid text-xs font-semibold uppercase tracking-wide px-5 py-3"
-          style={{
-            gridTemplateColumns: "44px 1fr 160px 100px 80px 110px 32px",
-            borderBottom: "1px solid #f0eae6",
-            color: "#8a8a8a",
-          }}
+          style={{ gridTemplateColumns: COL, borderBottom: "1px solid #f0eae6", color: "#8a8a8a" }}
         >
           <span />
-          <span className="px-3">Product</span>
-          <span>SKU</span>
-          <span>Price</span>
+          <span className="px-3">Product / Variant</span>
+          <span>Cost Price</span>
+          <span>Sale Price</span>
           <span>Stock</span>
-          <span>Variants</span>
+          <span>V / P Split</span>
           <span />
         </div>
 
-        {/* Rows */}
         {loading ? (
           <div className="py-16 flex flex-col items-center gap-3" style={{ color: "#8a8a8a" }}>
-            <div
-              className="w-8 h-8 rounded-full border-2 animate-spin"
-              style={{ borderColor: "#d57282", borderTopColor: "transparent" }}
-            />
+            <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: "#d57282", borderTopColor: "transparent" }} />
             <p className="text-sm">Loading inventory…</p>
           </div>
-        ) : products.length === 0 ? (
+        ) : variants.length === 0 ? (
           <div className="py-16 flex flex-col items-center gap-2" style={{ color: "#8a8a8a" }}>
             <Package size={32} style={{ opacity: 0.3 }} />
-            <p className="text-sm">No products found</p>
+            <p className="text-sm">No variants found</p>
           </div>
         ) : (
           <div className="divide-y" style={{ borderColor: "#f0eae6" }}>
-            {products.map((product) => (
-              <ProductRow key={product.product_id} product={product} />
+            {variants.map((v) => (
+              <VariantTableRow key={v.variant_id} variant={v} onRefresh={fetchVariants} />
             ))}
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
-          <div
-            className="flex items-center justify-between px-5 py-3.5 text-sm"
-            style={{ borderTop: "1px solid #f0eae6" }}
-          >
-            <span style={{ color: "#8a8a8a" }}>
-              Page {page} of {totalPages} · {total} products
-            </span>
+          <div className="flex items-center justify-between px-5 py-3.5 text-sm" style={{ borderTop: "1px solid #f0eae6" }}>
+            <span style={{ color: "#8a8a8a" }}>Page {page} of {totalPages} · {total} variants</span>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
