@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(textutil -convert txt -stdout \"/Users/bijnis/Documents/Projects/sal_admin/d2c_automation_playbook_v2.docx\")",
+      "WebFetch(domain:www.maeri.in)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --no-eslint)",
+      "Read(//Users/bijnis/Documents/Projects/**)",
+      "Bash(npm install recharts lucide-react)"
+    ]
+  }
+}
