@@ -11,6 +11,12 @@ import {
   Pencil,
   Check,
   Boxes,
+  Download,
+  Upload,
+  ChevronDown as ChevronDownIcon,
+  CheckCircle2,
+  XCircle,
+  SkipForward,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -65,6 +71,245 @@ function StockBadge({ qty }: { qty: number }) {
     <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: "#f0faf4", color: "#27a559" }}>
       {qty} in stock
     </span>
+  );
+}
+
+// ── Bulk Operation ─────────────────────────────────────────────────────────
+
+interface UploadSummary {
+  total_rows:        number;
+  updated_rows:      number;
+  updated_cost:      number;
+  updated_inventory: number;
+  skipped:           number;
+  errors:            number;
+}
+
+interface UploadResult {
+  row:               number;
+  variantId:         string;
+  status:            'updated' | 'skipped' | 'error';
+  reason?:           string;
+  costUpdated?:      boolean;
+  inventoryUpdated?: boolean;
+}
+
+function UploadResultModal({
+  summary,
+  results,
+  onClose,
+}: {
+  summary: UploadSummary;
+  results: UploadResult[];
+  onClose: () => void;
+}) {
+  const errorRows = results.filter((r) => r.status === 'error');
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="w-full max-w-lg rounded-2xl overflow-hidden"
+        style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}
+      >
+        <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: "1px solid #f0eae6" }}>
+          <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>Upload Complete</h3>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#f5f0ed]">
+            <X size={16} style={{ color: "#8a8a8a" }} />
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          {/* Summary cards */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ backgroundColor: "#f0faf4" }}>
+              <CheckCircle2 size={18} style={{ color: "#27a559" }} />
+              <div>
+                <p className="text-lg font-bold" style={{ color: "#27a559" }}>
+                  {summary.updated_rows}
+                </p>
+                <p className="text-xs" style={{ color: "#27a559" }}>Rows updated</p>
+              </div>
+            </div>
+            <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ backgroundColor: "#fff0f0" }}>
+              <XCircle size={18} style={{ color: "#e05252" }} />
+              <div>
+                <p className="text-lg font-bold" style={{ color: "#e05252" }}>{summary.errors}</p>
+                <p className="text-xs" style={{ color: "#e05252" }}>Errors</p>
+              </div>
+            </div>
+            <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ backgroundColor: "#faf7f5" }}>
+              <SkipForward size={18} style={{ color: "#8a8a8a" }} />
+              <div>
+                <p className="text-lg font-bold" style={{ color: "#525252" }}>{summary.skipped}</p>
+                <p className="text-xs" style={{ color: "#8a8a8a" }}>Skipped (no changes)</p>
+              </div>
+            </div>
+            <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ backgroundColor: "#faf7f5" }}>
+              <div>
+                <p className="text-xs font-medium mb-1" style={{ color: "#8a8a8a" }}>Breakdown</p>
+                <p className="text-xs" style={{ color: "#525252" }}>Cost: {summary.updated_cost} · Inventory: {summary.updated_inventory}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Error detail */}
+          {errorRows.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold mb-2" style={{ color: "#e05252" }}>Errors ({errorRows.length})</p>
+              <div
+                className="rounded-xl overflow-auto max-h-48 text-xs space-y-1 p-3"
+                style={{ backgroundColor: "#fff8f8", border: "1px solid #f5d0d0" }}
+              >
+                {errorRows.map((r) => (
+                  <div key={r.row} className="flex gap-2">
+                    <span className="shrink-0 font-mono" style={{ color: "#8a8a8a" }}>Row {r.row}</span>
+                    <span style={{ color: "#e05252" }}>{r.reason}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold"
+            style={{ backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BulkOperationButton({ onUploaded }: { onUploaded: () => void }) {
+  const [open, setOpen]                         = useState(false);
+  const [downloading, setDownloading]           = useState(false);
+  const [uploading, setUploading]               = useState(false);
+  const [uploadResult, setUploadResult]         = useState<{ summary: UploadSummary; results: UploadResult[] } | null>(null);
+  const [uploadError, setUploadError]           = useState("");
+  const fileInputRef                            = useRef<HTMLInputElement>(null);
+  const containerRef                            = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  async function handleDownload() {
+    setDownloading(true);
+    setOpen(false);
+    try {
+      const res = await fetch("/api/inventory/bulk/download");
+      if (!res.ok) throw new Error("Download failed");
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = `maeri_inventory_bulk_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    setUploading(true);
+    setUploadError("");
+    setOpen(false);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res  = await fetch("/api/inventory/bulk/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      setUploadResult({ summary: data.summary, results: data.results });
+      onUploaded();
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <>
+      <div ref={containerRef} className="relative">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          disabled={downloading || uploading}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-100"
+          style={{ backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)", opacity: downloading || uploading ? 0.7 : 1 }}
+        >
+          {uploading ? "Uploading…" : downloading ? "Downloading…" : "Bulk Operation"}
+          <ChevronDownIcon size={13} />
+        </button>
+
+        {open && (
+          <div
+            className="absolute right-0 mt-1.5 z-20 rounded-xl overflow-hidden w-44"
+            style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2", boxShadow: "0 4px 20px rgba(0,0,0,0.10)" }}
+          >
+            <button
+              onClick={handleDownload}
+              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#faf7f5] transition-colors"
+              style={{ color: "#525252" }}
+            >
+              <Download size={14} style={{ color: "#d57282" }} />
+              Download File
+            </button>
+            <div style={{ borderTop: "1px solid #f0eae6" }} />
+            <button
+              onClick={() => { setOpen(false); fileInputRef.current?.click(); }}
+              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#faf7f5] transition-colors"
+              style={{ color: "#525252" }}
+            >
+              <Upload size={14} style={{ color: "#d57282" }} />
+              Upload File
+            </button>
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+
+      {uploadError && (
+        <div
+          className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm"
+          style={{ backgroundColor: "#fff0f0", border: "1px solid #f5d0d0", color: "#e05252" }}
+        >
+          {uploadError}
+        </div>
+      )}
+
+      {uploadResult && (
+        <UploadResultModal
+          summary={uploadResult.summary}
+          results={uploadResult.results}
+          onClose={() => setUploadResult(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -455,13 +700,16 @@ export default function InventoryPage() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold" style={{ color: "#525252", fontFamily: "var(--font-poppins), sans-serif" }}>
-          Inventory
-        </h1>
-        <p className="text-sm mt-0.5" style={{ color: "#8a8a8a" }}>
-          {total > 0 ? `${total} variants` : "Loading…"}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-semibold" style={{ color: "#525252", fontFamily: "var(--font-poppins), sans-serif" }}>
+            Inventory
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: "#8a8a8a" }}>
+            {total > 0 ? `${total} variants` : "Loading…"}
+          </p>
+        </div>
+        <BulkOperationButton onUploaded={fetchVariants} />
       </div>
 
       {/* Filters */}

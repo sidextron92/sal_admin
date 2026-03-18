@@ -5,7 +5,13 @@
       "WebFetch(domain:www.maeri.in)",
       "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --no-eslint)",
       "Read(//Users/bijnis/Documents/Projects/**)",
-      "Bash(npm install recharts lucide-react)"
+      "Bash(npm install recharts lucide-react)",
+      "Bash(npx shadcn@latest add badge tooltip)",
+      "Bash(npm run build)",
+      "Bash(npm install)"
+    ],
+    "additionalDirectories": [
+      "/Users/bijnis/.claude/projects/-Users-bijnis-Documents-Projects-sal-admin/memory"
     ]
   }
 }
