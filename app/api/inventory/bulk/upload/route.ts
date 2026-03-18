@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import ExcelJS from 'exceljs'
+import { fetchPrimaryLocationId, pushInventoryToShopify } from '@/lib/shopify'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,6 +54,12 @@ interface RowResult {
   inventoryUpdated?: boolean
 }
 
+// Tracks variants whose inventory was updated so we can bulk-push to Shopify
+interface InventoryUpdatedRow {
+  variantId:    string
+  new_quantity: number
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
@@ -67,6 +74,7 @@ export async function POST(req: NextRequest) {
     if (!ws) return NextResponse.json({ error: 'Sheet "Inventory Bulk Update" not found. Please use the downloaded template.' }, { status: 400 })
 
     const results: RowResult[] = []
+    const inventoryUpdatedRows: InventoryUpdatedRow[] = []
     let updatedRows = 0, updatedCost = 0, updatedInventory = 0, skipped = 0, errors = 0
 
     // Skip header row (row 1)
@@ -158,9 +166,50 @@ export async function POST(req: NextRequest) {
       }
 
       updatedRows++
-      if (didCost)      updatedCost++
-      if (didInventory) updatedInventory++
+      if (didCost) updatedCost++
+      if (didInventory) {
+        updatedInventory++
+        // Track for Shopify push — new total = virtual + physical
+        inventoryUpdatedRows.push({ variantId, new_quantity: virt! + phys! })
+      }
       results.push({ row: rowNum, variantId, status: 'updated', costUpdated: didCost, inventoryUpdated: didInventory })
+    }
+
+    // Push inventory changes to Shopify in bulk
+    let shopify_push: { success: boolean; pushed: number; errors: string[] } | null = null
+
+    if (inventoryUpdatedRows.length > 0) {
+      try {
+        // Fetch inventory_item_id for all updated variants in one query
+        const variantIds = inventoryUpdatedRows.map((r) => r.variantId)
+        const { data: variants } = await supabaseAdmin
+          .from('product_variants')
+          .select('variant_id, inventory_item_id')
+          .in('variant_id', variantIds)
+
+        const itemIdMap = new Map(
+          (variants ?? [])
+            .filter((v) => v.inventory_item_id)
+            .map((v) => [v.variant_id, v.inventory_item_id as string]),
+        )
+
+        const pushItems = inventoryUpdatedRows
+          .filter((r) => itemIdMap.has(r.variantId))
+          .map((r) => ({ inventory_item_id: itemIdMap.get(r.variantId)!, quantity: r.new_quantity }))
+
+        if (pushItems.length > 0) {
+          const locationId = await fetchPrimaryLocationId()
+          shopify_push = await pushInventoryToShopify(pushItems, locationId)
+        } else {
+          shopify_push = { success: true, pushed: 0, errors: ['No variants had inventory_item_id — run a product sync first'] }
+        }
+      } catch (shopifyErr) {
+        shopify_push = {
+          success: false,
+          pushed: 0,
+          errors: [shopifyErr instanceof Error ? shopifyErr.message : String(shopifyErr)],
+        }
+      }
     }
 
     return NextResponse.json({
@@ -173,6 +222,7 @@ export async function POST(req: NextRequest) {
         skipped,
         errors,
       },
+      shopify_push,
       results,
     })
   } catch (err) {

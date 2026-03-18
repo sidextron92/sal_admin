@@ -192,12 +192,30 @@ const PRODUCTS_QUERY = `
                 price
                 sku
                 inventoryQuantity
+                inventoryItem { id }
               }
             }
           }
         }
       }
       pageInfo { hasNextPage endCursor }
+    }
+  }
+`
+
+const LOCATIONS_QUERY = `
+  query {
+    locations(first: 1) {
+      edges { node { id name } }
+    }
+  }
+`
+
+const INVENTORY_SET_MUTATION = `
+  mutation inventorySetQuantities($input: InventorySetQuantitiesInput!) {
+    inventorySetQuantities(input: $input) {
+      inventoryAdjustmentGroup { createdAt reason }
+      userErrors { field message }
     }
   }
 `
@@ -225,11 +243,76 @@ export interface ShopifyVariant {
   price: number
   sku: string
   inventory_quantity: number
+  inventory_item_id: string
 }
 
 export interface FetchProductsResult {
   products: ShopifyProduct[]
   variants: ShopifyVariant[]
+}
+
+export interface InventoryPushItem {
+  inventory_item_id: string
+  quantity: number
+}
+
+export interface InventoryPushResult {
+  success: boolean
+  pushed: number
+  errors: string[]
+}
+
+// Returns the primary Shopify location ID (numeric, stripped from GID).
+// Reads SHOPIFY_LOCATION_ID env var first to avoid an extra API call.
+export async function fetchPrimaryLocationId(): Promise<string> {
+  const envId = process.env.SHOPIFY_LOCATION_ID
+  if (envId) return envId
+
+  const data = await gqlFetch(LOCATIONS_QUERY, {})
+  const loc = (data as any).data.locations.edges[0]?.node
+  if (!loc) throw new Error('No Shopify locations found')
+  return loc.id.split('/').pop()
+}
+
+// Pushes absolute inventory quantities to Shopify for the given inventory items.
+// Batches at 250 items per mutation call (Shopify limit).
+export async function pushInventoryToShopify(
+  items: InventoryPushItem[],
+  locationId: string,
+): Promise<InventoryPushResult> {
+  if (items.length === 0) return { success: true, pushed: 0, errors: [] }
+
+  const BATCH = 250
+  const allErrors: string[] = []
+  let totalPushed = 0
+
+  for (let i = 0; i < items.length; i += BATCH) {
+    const batch = items.slice(i, i + BATCH)
+    const quantities = batch.map((item) => ({
+      inventoryItemId: `gid://shopify/InventoryItem/${item.inventory_item_id}`,
+      locationId: `gid://shopify/Location/${locationId}`,
+      quantity: item.quantity,
+    }))
+
+    const data = await gqlFetch(INVENTORY_SET_MUTATION, {
+      input: { name: 'available', reason: 'correction', ignoreCompareQuantity: true, quantities },
+    })
+
+    const userErrors: { message: string }[] =
+      (data as any).data?.inventorySetQuantities?.userErrors ?? []
+
+    if (userErrors.length > 0) {
+      allErrors.push(...userErrors.map((e) => e.message))
+    } else {
+      totalPushed += batch.length
+    }
+  }
+
+  return {
+    success: allErrors.length === 0,
+    pushed: totalPushed,
+    errors: allErrors,
+  }
 }
 
 // Fetches ALL products with full pagination (no date filter — full catalog sync).
@@ -271,6 +354,7 @@ export async function fetchProducts(): Promise<FetchProductsResult> {
           price: parseFloat(v.price),
           sku: v.sku ?? '',
           inventory_quantity: v.inventoryQuantity ?? 0,
+          inventory_item_id: v.inventoryItem?.id.split('/').pop() ?? '',
         })
       }
     }
