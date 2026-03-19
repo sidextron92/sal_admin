@@ -1,6 +1,11 @@
-import { ShoppingBag, IndianRupee, Truck, AlertTriangle } from "lucide-react";
+import { ShoppingBag, IndianRupee, TrendingUp, Users } from "lucide-react";
+
+const ICON_STYLE = { color: "#d57282" } as const;
 import MetricCard from "@/components/dashboard/MetricCard";
 import OverviewCharts from "@/components/dashboard/OverviewCharts";
+import { supabaseAdmin } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -9,13 +14,100 @@ function getGreeting() {
   return "Good evening";
 }
 
-export default function OverviewPage() {
+function formatINR(value: number) {
+  if (value >= 100000)
+    return `₹${(value / 100000).toFixed(1)}L`;
+  if (value >= 1000)
+    return `₹${(value / 1000).toFixed(1)}K`;
+  return `₹${Math.round(value)}`;
+}
+
+function pctChange(curr: number, prev: number): { label: string; trend: "up" | "down" | "neutral" } {
+  if (prev === 0) return { label: "No prev. data", trend: "neutral" };
+  const pct = ((curr - prev) / prev) * 100;
+  const sign = pct >= 0 ? "+" : "";
+  const trend = pct > 0 ? "up" : pct < 0 ? "down" : "neutral";
+  return { label: `${sign}${pct.toFixed(1)}% vs same period last month`, trend };
+}
+
+interface MetricsResponse {
+  sales: {
+    gmv: number;
+    order_count: number;
+    prev_gmv: number;
+    prev_order_count: number;
+  };
+  revenue: {
+    revenue: number;
+    prev_revenue: number;
+  };
+  organic: {
+    organic_orders: number;
+    organic_gmv: number;
+    inorganic_orders: number;
+    inorganic_gmv: number;
+  };
+  repeat_rate: {
+    total_customers: number;
+    repeat_customers: number;
+    repeat_rate: number;
+  };
+  chart: { day: string; order_count: number; gmv: number }[];
+}
+
+async function fetchMetrics(): Promise<MetricsResponse | null> {
+  try {
+    const [s, r, o, rr, c] = await Promise.all([
+      supabaseAdmin.rpc("overview_mtd_sales"),
+      supabaseAdmin.rpc("overview_mtd_revenue"),
+      supabaseAdmin.rpc("overview_mtd_organic"),
+      supabaseAdmin.rpc("overview_mtd_repeat_rate"),
+      supabaseAdmin.rpc("overview_last7days_chart"),
+    ]);
+    if (s.error || r.error || o.error || rr.error || c.error) return null;
+    return {
+      sales: s.data,
+      revenue: r.data,
+      organic: o.data,
+      repeat_rate: rr.data,
+      chart: c.data ?? [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+export default async function OverviewPage() {
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+
+  const metrics = await fetchMetrics();
+
+  // Card 1
+  const salesGmv = metrics?.sales.gmv ?? 0;
+  const salesOrders = metrics?.sales.order_count ?? 0;
+  const salesChange = pctChange(salesGmv, metrics?.sales.prev_gmv ?? 0);
+
+  // Card 2
+  const revenue = metrics?.revenue.revenue ?? 0;
+  const revenueChange = pctChange(revenue, metrics?.revenue.prev_revenue ?? 0);
+
+  // Card 3
+  const organicOrders = metrics?.organic.organic_orders ?? 0;
+  const organicGmv = metrics?.organic.organic_gmv ?? 0;
+  const inorganicOrders = metrics?.organic.inorganic_orders ?? 0;
+  const inorganicGmv = metrics?.organic.inorganic_gmv ?? 0;
+
+  // Card 4
+  const repeatRate = metrics?.repeat_rate.repeat_rate ?? 0;
+  const repeatCustomers = metrics?.repeat_rate.repeat_customers ?? 0;
+  const totalCustomers = metrics?.repeat_rate.total_customers ?? 0;
+
+  const chartData = metrics?.chart ?? [];
 
   return (
     <div className="space-y-6">
@@ -45,38 +137,64 @@ export default function OverviewPage() {
 
       {/* Metric cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: MTD Sales */}
         <MetricCard
-          label="Today's Orders"
-          value="47"
-          icon={ShoppingBag}
-          trend="up"
-          trendLabel="+12% vs yesterday"
+          label="MTD Sales"
+          value={formatINR(salesGmv)}
+          subvalue={`${salesOrders} orders`}
+          icon={<ShoppingBag size={17} style={ICON_STYLE} />}
+          trend={salesChange.trend}
+          trendLabel={salesChange.label}
+          tooltip="Month-to-date gross sales (non-cancelled orders). Order count shown below. Compared against the same number of days in the previous month."
         />
+
+        {/* Card 2: MTD Revenue */}
         <MetricCard
-          label="Revenue (Today)"
-          value="₹1,24,500"
-          icon={IndianRupee}
-          trend="up"
-          trendLabel="+8% vs yesterday"
+          label="MTD Revenue"
+          value={formatINR(revenue)}
+          icon={<IndianRupee size={17} style={ICON_STYLE} />}
+          trend={revenueChange.trend}
+          trendLabel={revenueChange.label}
+          tooltip="Revenue = Order Value − Cost of Goods Sold (sum of variant cost × quantity per line item). Cancelled orders excluded. Revenue equals Sales until costs are entered."
         />
+
+        {/* Card 3: Organic vs Inorganic */}
         <MetricCard
-          label="Pending Shipments"
-          value="12"
-          icon={Truck}
+          label="MTD Organic vs Inorganic"
+          value={`${organicOrders} / ${inorganicOrders}`}
+          icon={<TrendingUp size={17} style={ICON_STYLE} />}
           trend="neutral"
-          trendLabel="Awaiting pickup"
-        />
+          tooltip="Inorganic: orders where first or last UTM campaign is non-empty. Organic: all other orders. Shows order count (organic / inorganic) and GMV split."
+        >
+          <div className="flex flex-col gap-1 mt-0.5">
+            <div className="flex justify-between text-xs">
+              <span style={{ color: "#8a8a8a" }}>Organic</span>
+              <span className="font-medium" style={{ color: "#525252" }}>
+                {formatINR(organicGmv)}
+              </span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span style={{ color: "#8a8a8a" }}>Inorganic</span>
+              <span className="font-medium" style={{ color: "#525252" }}>
+                {formatINR(inorganicGmv)}
+              </span>
+            </div>
+          </div>
+        </MetricCard>
+
+        {/* Card 4: Repeat Rate */}
         <MetricCard
-          label="RTO Rate (MTD)"
-          value="8.2%"
-          icon={AlertTriangle}
-          trend="down"
-          trendLabel="↓ 1.4% vs last month"
+          label="MTD Repeat Rate"
+          value={`${repeatRate}%`}
+          subvalue={`${repeatCustomers} of ${totalCustomers} customers`}
+          icon={<Users size={17} style={ICON_STYLE} />}
+          trend={repeatRate >= 20 ? "up" : repeatRate >= 10 ? "neutral" : "down"}
+          tooltip="Repeat Rate = customers who placed at least one order this month with a lifetime order index > 1, divided by all unique customers with MTD orders. Cancelled orders excluded."
         />
       </div>
 
-      {/* Charts */}
-      <OverviewCharts />
+      {/* Chart */}
+      <OverviewCharts chartData={chartData} />
 
       {/* Quick status row */}
       <div
@@ -103,10 +221,10 @@ export default function OverviewPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
           {[
-            { label: "Shopify Orders", value: "31", note: "today" },
-            { label: "Amazon Orders", value: "16", note: "today" },
-            { label: "NDR Cases", value: "4", note: "active" },
-            { label: "Low Stock SKUs", value: "3", note: "below threshold" },
+            { label: "Shopify Orders", value: "—", note: "sync to update" },
+            { label: "Amazon Orders", value: "—", note: "coming soon" },
+            { label: "NDR Cases", value: "—", note: "coming soon" },
+            { label: "Low Stock SKUs", value: "—", note: "check inventory" },
           ].map((item) => (
             <div key={item.label}>
               <p

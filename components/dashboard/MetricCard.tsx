@@ -1,22 +1,31 @@
-import { LucideIcon } from "lucide-react";
+"use client";
+
+import { Info } from "lucide-react";
+import { useState } from "react";
 
 interface MetricCardProps {
   label: string;
   value: string;
-  subtext?: string;
-  icon: LucideIcon;
+  subvalue?: string;
+  icon: React.ReactNode;
   trend?: "up" | "down" | "neutral";
   trendLabel?: string;
+  tooltip?: string;
+  children?: React.ReactNode;
 }
 
 export default function MetricCard({
   label,
   value,
-  subtext,
-  icon: Icon,
+  subvalue,
+  icon,
   trend,
   trendLabel,
+  tooltip,
+  children,
 }: MetricCardProps) {
+  const [showTooltip, setShowTooltip] = useState(false);
+
   const trendColor =
     trend === "up"
       ? "#22c55e"
@@ -33,9 +42,36 @@ export default function MetricCard({
       }}
     >
       <div className="flex items-start justify-between">
-        <p className="text-[0.8125rem] font-medium" style={{ color: "#8a8a8a" }}>
-          {label}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-[0.8125rem] font-medium" style={{ color: "#8a8a8a" }}>
+            {label}
+          </p>
+          {tooltip && (
+            <div className="relative flex items-center">
+              <button
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+                className="flex items-center focus:outline-none"
+                tabIndex={-1}
+              >
+                <Info size={12} style={{ color: "#b0a0a0" }} />
+              </button>
+              {showTooltip && (
+                <div
+                  className="absolute left-0 top-5 z-50 w-56 rounded-xl p-3 text-xs leading-relaxed shadow-lg"
+                  style={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #E2E2E2",
+                    color: "#525252",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.10)",
+                  }}
+                >
+                  {tooltip}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
           style={{
@@ -43,7 +79,7 @@ export default function MetricCard({
             boxShadow: "inset 0 1px 2px rgba(213, 114, 130, 0.08)",
           }}
         >
-          <Icon size={17} style={{ color: "#d57282" }} />
+          {icon}
         </div>
       </div>
 
@@ -51,12 +87,19 @@ export default function MetricCard({
         <p className="text-2xl font-semibold tracking-tight" style={{ color: "#525252" }}>
           {value}
         </p>
-        {(subtext || trendLabel) && (
+        {subvalue && (
+          <p className="text-sm font-medium mt-0.5" style={{ color: "#8a8a8a" }}>
+            {subvalue}
+          </p>
+        )}
+        {trendLabel && (
           <p className="text-xs mt-0.5 font-medium" style={{ color: trendColor }}>
-            {trendLabel ?? subtext}
+            {trendLabel}
           </p>
         )}
       </div>
+
+      {children}
     </div>
   );
 }
