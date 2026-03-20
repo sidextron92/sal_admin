@@ -72,7 +72,7 @@ Fetches all active Shopify products + variants → upserts `products` + `product
 `app/api/orders/route.ts`
 Paginated orders (30/page) with search + filtering. Joins `order_line_items`.
 Query params: `page`, `search` (ilike on order_name/customer_name/phone), `status` (sr_status; `"IN TRANSIT"` uses prefix match), `payment` (`cod` | `prepaid`).
-Returns `{ orders, total, page, pageSize }`.
+Returns `{ orders, total, page, pageSize }`. Each order includes `shipping_status` (canonical system status from webhook layer).
 
 ---
 
@@ -156,6 +156,37 @@ Creates a manual order (Offline or Amazon channel) — inserts into `orders` + `
 Returns `{ success, order_id, shopify_push: { success, pushed, errors }, shiprocket_push: { success, sr_order_id?, error? }, inventory_warnings: string[] }`.
 
 **Rollback:** if line item insert fails, the order row is deleted to avoid orphaned orders.
+
+---
+
+### `POST /api/webhooks/shipping/[partnerId]`
+`app/api/webhooks/shipping/[partnerId]/route.ts`
+Receives inbound shipping status webhooks from any logistics partner. `partnerId` is the numeric `shipping_partners.id` (e.g., `1` for Shiprocket).
+
+> **URL note:** Shiprocket bans "shiprocket", "sr", "kr", "kartrocket" in webhook URLs — use the numeric ID path, not the slug.
+
+**Auth:** If `shipping_partners.webhook_secret` is set, the request must include a matching `x-api-key` header — returns `401` otherwise. If `webhook_secret` is `NULL`, auth is skipped (opt-in per partner).
+
+**Logic:**
+1. Look up partner by `id` — 404 if not found or inactive
+2. Verify `x-api-key` if `webhook_secret` is configured
+3. Parse JSON body — 400 on failure
+4. Extract fields via partner-specific extractor (Shiprocket: `awb = awb_no`, `current_status = partner_status`, `current_timestamp` parsed from `"DD MM YYYY HH:MM:SS"` → ISO)
+5. Map `partner_status` → `system_status` via `status_mapper` table (null if unmapped — still logs)
+6. Find matching order via `orders.awb_code = awb_no` (null if no match — orphan log still written)
+7. Insert row into `order_tracking_logs` (always)
+8. If order found + system_status mapped: update `orders.shipping_status` + `orders.shipping_partner_id`
+
+Always returns `{ received: true }` with 200 — Shiprocket retries on non-2xx.
+
+**Register in Shiprocket:** `POST https://<domain>/api/webhooks/shipping/1`
+
+---
+
+### `GET /api/orders/[orderId]/tracking`
+`app/api/orders/[orderId]/tracking/route.ts`
+Returns all tracking log entries for an order, ordered chronologically (`received_at ASC`).
+Returns `{ logs: [...] }`. Each entry: `id`, `system_status`, `partner_status`, `awb_no`, `event_timestamp`, `received_at`, `partner_name`. Raw `partner_payload` is excluded from response.
 
 ---
 
@@ -246,6 +277,7 @@ PK: `order_id` (Shopify numeric ID as TEXT for Shopify orders; `OFFLINE-{ts}-{ra
 - Shopify columns: order fields, UTM/journey (first + last visit × 10 cols), `synced_at`
 - Shiprocket columns: `customer_name/email/phone/city/pincode/state/address`, `sr_order_id`, `sr_status`, `payment_method`, `awb_code`, `courier_name`, `etd`
 - Manual order columns: `sales_channel` (`Offline` | `Amazon` | `Shopify` default), `customer_pincode`, `customer_address`
+- Tracking columns: `shipping_status` (canonical system status, set by webhook), `shipping_partner_id` FK → `shipping_partners`
 - Always null (PII blocked): `customer_first_name`, `customer_last_name`
 - Indexes: `created_at DESC`, `financial_status`, `customer_id`, `sales_channel`
 - Known `sr_status`: `NEW`, `PICKED UP`, `IN TRANSIT`, `IN TRANSIT-EN-ROUTE`, `IN TRANSIT-AT DESTINATION HUB`, `DELIVERED`, `RTO INITIATED`, `RTO DELIVERED`, `CANCELED`, `UNDELIVERED-3RD ATTEMPT`, `SELF FULFILLED`
@@ -275,6 +307,21 @@ Inventory management (never overwritten by sync):
 
 ### `inventory_logs`
 Full audit log written by `trg_inventory_change`. Columns: `variant_id`, `product_id`, `variant_title`, `product_title`, `prev/new/delta` for virtual/physical/total, `remarks`, `changed_by`, `changed_at`. Indexes: `variant_id`, `changed_at DESC`.
+
+### `shipping_partners`
+PK: `id` (serial). Columns: `name`, `slug` (unique, internal only — not used in URL), `status` (`active`|`inactive`), `webhook_secret` (nullable; if set, `x-api-key` header is required on inbound webhooks), `created_at`.
+Seeded: id=1 → Shiprocket.
+
+### `status_mapper`
+Maps vendor-specific statuses → canonical system statuses. Columns: `shipping_partner_id` FK, `partner_status`, `system_status`. Unique on `(shipping_partner_id, partner_status)`.
+
+**Canonical system statuses (12):**
+`NEW` | `OUT_FOR_PICKUP` | `PICKED_UP` | `IN_TRANSIT` | `OUT_FOR_DELIVERY` | `DELIVERED` | `UNDELIVERED` | `RETURN_INITIATED` | `RETURNED` | `CANCELLED` | `LOST` | `PICKUP_FAILED`
+
+Seeded: 53 Shiprocket status mappings covering all known Shiprocket statuses.
+
+### `order_tracking_logs`
+One row per inbound webhook event. PK: `id` (bigserial). Columns: `order_id` (nullable FK, null for orphan events where AWB has no match), `shipping_partner_id` FK, `awb_no`, `system_status` (null if unmapped), `partner_status`, `partner_payload` (full raw JSONB — not exposed in API response), `event_timestamp` (parsed from payload), `received_at`. Indexes: `order_id`, `awb_no`, `received_at DESC`.
 
 ---
 
@@ -320,6 +367,10 @@ Both modes write to `inventory_logs`.
 - **InventoryModal** — virtual/physical steppers, calculated total, remarks; calls `PATCH /api/products/[variantId]/inventory` which also pushes to Shopify
 - **BulkOperationButton** — Download / Upload; upload shows result modal with Shopify push status
 
+**Orders page (`app/dashboard/orders/page.tsx`):**
+- **TrackingPanel** — fixed right slide-in panel (380px). Opened by clicking the AWB chip on any order row. Fetches `GET /api/orders/[orderId]/tracking` and renders a vertical timeline: system status badge + partner status text + timestamp. Empty state + loading skeleton. Backdrop click closes panel.
+- AWB code in status column is a `<button>` with a `MapPin` icon — only shown when `awb_code` is present.
+
 ---
 
 ## Roadmap
@@ -328,7 +379,7 @@ Both modes write to `inventory_logs`.
 - [x] Phase 1.5: Shopify orders sync + Settings page
 - [x] Phase 2: Orders page — live data + Shiprocket sync
 - [x] Phase 2.5: Inventory — cost tracking, virtual/physical split, bulk Excel, Shopify write-back
-- [ ] Phase 3: Shiprocket shipping updates (tracking timeline, NDR management)
+- [x] Phase 3: Shiprocket shipping updates — webhook ingestion, status mapping, tracking timeline UI
 - [ ] Phase 4: Voice AI triggers
 - [ ] Phase 5: Meta Ads dashboard, Reconciliation
 - [ ] Shopify sync: full historical order pagination
