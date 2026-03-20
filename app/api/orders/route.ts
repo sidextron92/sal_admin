@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
   const search = (searchParams.get('search') ?? '').trim()
   const status = searchParams.get('status') ?? ''       // sr_status
-  const payment = searchParams.get('payment') ?? ''     // cod | prepaid
+  const delay = searchParams.get('delay') ?? ''         // pickup_delay | delivery_delay
   const from = (page - 1) * PAGE_SIZE
 
   try {
@@ -33,16 +33,27 @@ export async function GET(req: NextRequest) {
         `order_name.ilike.%${search}%,customer_name.ilike.%${search}%,customer_phone.ilike.%${search}%`
       )
     }
-    if (status) {
+    if (delay === 'pickup_delay') {
+      const cutoff = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+      query = query
+        .lt('created_at', cutoff)
+        .or('sr_status.eq.NEW,sr_status.is.null')
+        .is('cancelled_at', null)
+    } else if (delay === 'delivery_delay') {
+      const cutoff = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+      query = query
+        .lt('created_at', cutoff)
+        .or('sr_status.ilike.PICKED UP%,sr_status.ilike.IN TRANSIT%,sr_status.ilike.UNDELIVERED%')
+        .not('sr_status', 'ilike', 'RTO%')
+        .neq('sr_status', 'CANCELED')
+        .is('cancelled_at', null)
+    } else if (status) {
       // Support prefix match for IN TRANSIT variants
       if (status === 'IN TRANSIT') {
         query = query.ilike('sr_status', 'IN TRANSIT%')
       } else {
         query = query.eq('sr_status', status)
       }
-    }
-    if (payment) {
-      query = query.eq('payment_method', payment)
     }
 
     const { data, count, error } = await query

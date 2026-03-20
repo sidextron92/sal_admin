@@ -100,11 +100,6 @@ function getSrStatusConfig(status: string | null) {
   return SR_STATUS_CONFIG[key] ?? { label: status, bg: "#f5f5f5", color: "#8a8a8a" };
 }
 
-const PAYMENT_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
-  cod:     { label: "COD",     bg: "#fff8e6", color: "#d4930a" },
-  prepaid: { label: "Prepaid", bg: "#f0faf4", color: "#27a559" },
-};
-
 // ---- System status config ----
 
 const SYSTEM_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
@@ -409,6 +404,84 @@ function Toast({ toast, onClose }: { toast: ToastData; onClose: () => void }) {
       >
         <X size={13} style={{ color: "#8a8a8a" }} />
       </button>
+    </div>
+  );
+}
+
+// ---- Status Filter Dropdown ----
+
+function StatusFilterDropdown({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isActive = value !== "";
+  const selectedLabel = STATUS_FILTERS.find((f) => f.value === value)?.label ?? "All Statuses";
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 px-3.5 py-2 text-sm font-medium transition-all duration-100"
+        style={{
+          borderRadius: 22,
+          ...(isActive
+            ? { backgroundColor: "#f9e8eb", color: "#d57282", border: "1px solid #d57282" }
+            : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }),
+        }}
+      >
+        {selectedLabel}
+        <ChevronDown
+          size={13}
+          style={{
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 150ms ease",
+          }}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute top-full mt-1.5 left-0 z-50 py-1 overflow-hidden"
+          style={{
+            backgroundColor: "#ffffff",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+            border: "1px solid #E2E2E2",
+            borderRadius: 14,
+            minWidth: 180,
+          }}
+        >
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => { onChange(f.value); setOpen(false); }}
+              className="w-full text-left px-3 py-2 text-sm transition-colors"
+              style={{
+                color: value === f.value ? "#d57282" : "#525252",
+                fontWeight: value === f.value ? 600 : 400,
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -1691,7 +1764,7 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [paymentFilter, setPaymentFilter] = useState("");
+  const [delayFilter, setDelayFilter] = useState<"" | "pickup_delay" | "delivery_delay">("");
   const [modalChannel, setModalChannel] = useState<"Offline" | "Amazon" | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
@@ -1713,7 +1786,7 @@ export default function OrdersPage() {
   }, [search]);
 
   // Reset page on filter change
-  useEffect(() => { setPage(1); }, [statusFilter, paymentFilter]);
+  useEffect(() => { setPage(1); }, [statusFilter, delayFilter]);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -1721,18 +1794,18 @@ export default function OrdersPage() {
       page: String(page),
       search: debouncedSearch,
       status: statusFilter,
-      payment: paymentFilter,
+      delay: delayFilter,
     });
     const res = await fetch(`/api/orders?${params}`);
     const data = await res.json();
     setOrders(data.orders ?? []);
     setTotal(data.total ?? 0);
     setLoading(false);
-  }, [page, debouncedSearch, statusFilter, paymentFilter]);
+  }, [page, debouncedSearch, statusFilter, delayFilter]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  const hasActiveFilters = debouncedSearch || statusFilter || paymentFilter;
+  const hasActiveFilters = debouncedSearch || statusFilter || delayFilter;
 
   return (
     <div className="space-y-5">
@@ -1776,43 +1849,35 @@ export default function OrdersPage() {
         </div>
 
         {/* Status filter */}
-        <select
+        <StatusFilterDropdown
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm px-3 py-2 rounded-xl outline-none cursor-pointer"
-          style={{
-            backgroundColor: statusFilter ? "#f9e8eb" : "#ffffff",
-            border: "1px solid #E2E2E2",
-            color: statusFilter ? "#d57282" : "#525252",
-          }}
-        >
-          {STATUS_FILTERS.map((f) => (
-            <option key={f.value} value={f.value}>{f.label}</option>
-          ))}
-        </select>
+          onChange={(v) => { setStatusFilter(v); setDelayFilter(""); }}
+        />
 
-        {/* Payment filter */}
-        <div className="flex gap-1.5">
-          {["", "cod", "prepaid"].map((v) => (
-            <button
-              key={v}
-              onClick={() => setPaymentFilter(v)}
-              className="px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-100"
-              style={
-                paymentFilter === v
-                  ? { backgroundColor: "#d57282", color: "#ffffff" }
-                  : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }
-              }
-            >
-              {v === "" ? "All" : v === "cod" ? "COD" : "Prepaid"}
-            </button>
-          ))}
-        </div>
+        {/* Delay filters */}
+        {[
+          { value: "pickup_delay" as const, label: "Pickup Delay" },
+          { value: "delivery_delay" as const, label: "Delivery Delay" },
+        ].map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => { setDelayFilter(delayFilter === value ? "" : value); setStatusFilter(""); }}
+            className="px-3.5 py-2 text-sm font-medium transition-all duration-100"
+            style={{
+              borderRadius: 22,
+              ...(delayFilter === value
+                ? { backgroundColor: "#d57282", color: "#ffffff", border: "1px solid #d57282" }
+                : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }),
+            }}
+          >
+            {label}
+          </button>
+        ))}
 
         {/* Clear filters */}
         {hasActiveFilters && (
           <button
-            onClick={() => { setSearch(""); setStatusFilter(""); setPaymentFilter(""); }}
+            onClick={() => { setSearch(""); setStatusFilter(""); setDelayFilter(""); }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm"
             style={{ color: "#8a8a8a", border: "1px solid #E2E2E2", backgroundColor: "#ffffff" }}
           >
@@ -1866,10 +1931,10 @@ export default function OrdersPage() {
         ) : (
           <div className="divide-y" style={{ borderColor: "#f0eae6" }}>
             {orders.map((order) => {
-              const statusCfg = getSrStatusConfig(order.sr_status);
-              const paymentCfg = order.payment_method
-                ? PAYMENT_CONFIG[order.payment_method] ?? null
-                : null;
+              const statusCfg = order.cancelled_at
+                ? SR_STATUS_CONFIG["CANCELED"]
+                : getSrStatusConfig(order.sr_status);
+              const isCoD = order.payment_method?.toLowerCase() === "cod";
               const items = order.order_line_items ?? [];
               const firstItem = items[0];
               const isRepeat = (order.customer_order_index ?? 1) > 1;
@@ -1943,12 +2008,15 @@ export default function OrdersPage() {
 
                   {/* Payment */}
                   <div className="flex justify-center">
-                    {paymentCfg ? (
+                    {order.payment_method ? (
                       <span
                         className="text-xs font-medium px-2.5 py-1 rounded-full"
-                        style={{ backgroundColor: paymentCfg.bg, color: paymentCfg.color }}
+                        style={{
+                          backgroundColor: isCoD ? "#fff8e6" : "#f0faf4",
+                          color: isCoD ? "#d4930a" : "#27a559",
+                        }}
                       >
-                        {paymentCfg.label}
+                        {isCoD ? "COD" : "Prepaid"}
                       </span>
                     ) : (
                       <span style={{ color: "#8a8a8a" }}>—</span>
