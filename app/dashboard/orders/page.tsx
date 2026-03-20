@@ -14,6 +14,7 @@ import {
   Plus,
   Trash2,
   Check,
+  MapPin,
 } from "lucide-react";
 
 // ---- Types ----
@@ -75,6 +76,7 @@ interface Order {
   etd: string | null;
   cancelled_at: string | null;
   customer_order_index: number | null;
+  shipping_status: string | null;
   order_line_items: LineItem[];
 }
 
@@ -102,6 +104,198 @@ const PAYMENT_CONFIG: Record<string, { label: string; bg: string; color: string 
   cod:     { label: "COD",     bg: "#fff8e6", color: "#d4930a" },
   prepaid: { label: "Prepaid", bg: "#f0faf4", color: "#27a559" },
 };
+
+// ---- System status config ----
+
+const SYSTEM_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  NEW:              { label: "New",              color: "#8a8a8a", bg: "#f5f5f5" },
+  OUT_FOR_PICKUP:   { label: "Out for Pickup",   color: "#6366f1", bg: "#eef2ff" },
+  PICKED_UP:        { label: "Picked Up",        color: "#3b82f6", bg: "#eff6ff" },
+  IN_TRANSIT:       { label: "In Transit",       color: "#0ea5e9", bg: "#f0f9ff" },
+  OUT_FOR_DELIVERY: { label: "Out for Delivery", color: "#f59e0b", bg: "#fffbeb" },
+  DELIVERED:        { label: "Delivered",        color: "#22c55e", bg: "#f0fdf4" },
+  UNDELIVERED:      { label: "Undelivered",      color: "#f97316", bg: "#fff7ed" },
+  RETURN_INITIATED: { label: "Return Initiated", color: "#ef4444", bg: "#fef2f2" },
+  RETURNED:         { label: "Returned",         color: "#dc2626", bg: "#fef2f2" },
+  CANCELLED:        { label: "Cancelled",        color: "#6b7280", bg: "#f9fafb" },
+  LOST:             { label: "Lost",             color: "#7c3aed", bg: "#f5f3ff" },
+  PICKUP_FAILED:    { label: "Pickup Failed",    color: "#f97316", bg: "#fff7ed" },
+};
+
+// ---- Tracking log type ----
+
+interface TrackingLog {
+  id: number;
+  system_status: string | null;
+  partner_status: string | null;
+  awb_no: string | null;
+  event_timestamp: string | null;
+  received_at: string;
+  partner_name: string | null;
+}
+
+// ---- TrackingPanel ----
+
+function TrackingPanel({
+  order,
+  onClose,
+}: {
+  order: Order;
+  onClose: () => void;
+}) {
+  const [logs, setLogs] = useState<TrackingLog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/orders/${order.order_id}/tracking`);
+        const data = await res.json();
+        setLogs(data.logs ?? []);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [order.order_id]);
+
+  function formatTs(ts: string | null) {
+    if (!ts) return null;
+    return new Date(ts).toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 bg-black/20"
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div
+        className="fixed right-0 top-0 bottom-0 z-50 flex flex-col"
+        style={{
+          width: 380,
+          backgroundColor: "#ffffff",
+          boxShadow: "-4px 0 32px rgba(0,0,0,0.10)",
+          borderLeft: "1px solid #E2E2E2",
+        }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: "1px solid #f0eae6" }}
+        >
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "#525252" }}>
+              Tracking — {order.order_name}
+            </p>
+            {order.awb_code && (
+              <span
+                className="inline-flex items-center gap-1 text-[11px] font-mono mt-0.5 px-2 py-0.5 rounded-md"
+                style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+              >
+                AWB {order.awb_code}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-[#f5f0ed] transition-colors"
+          >
+            <X size={15} style={{ color: "#8a8a8a" }} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          {loading ? (
+            <div className="flex flex-col gap-3 mt-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-3 items-start">
+                  <div className="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 bg-[#E2E2E2] animate-pulse" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-4 rounded bg-[#E2E2E2] animate-pulse w-2/3" />
+                    <div className="h-3 rounded bg-[#E2E2E2] animate-pulse w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : logs.length === 0 ? (
+            <div
+              className="flex flex-col items-center justify-center gap-2 py-16 text-center"
+              style={{ color: "#8a8a8a" }}
+            >
+              <MapPin size={28} style={{ opacity: 0.3 }} />
+              <p className="text-sm">No tracking events yet</p>
+              <p className="text-xs" style={{ color: "#b8a0a0" }}>
+                Events appear once the courier starts scanning
+              </p>
+            </div>
+          ) : (
+            <ol className="relative">
+              {logs.map((log, idx) => {
+                const cfg = log.system_status
+                  ? SYSTEM_STATUS_CONFIG[log.system_status]
+                  : null;
+                const isLast = idx === logs.length - 1;
+                return (
+                  <li key={log.id} className="flex gap-3 pb-5 relative">
+                    {/* Connector line */}
+                    {!isLast && (
+                      <div
+                        className="absolute left-[4px] top-3 bottom-0 w-px"
+                        style={{ backgroundColor: "#E2E2E2" }}
+                      />
+                    )}
+
+                    {/* Dot */}
+                    <div
+                      className="w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 z-10 ring-2 ring-white"
+                      style={{ backgroundColor: cfg?.color ?? "#E2E2E2" }}
+                    />
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      {cfg ? (
+                        <span
+                          className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full mb-0.5"
+                          style={{ backgroundColor: cfg.bg, color: cfg.color }}
+                        >
+                          {cfg.label}
+                        </span>
+                      ) : (
+                        <span className="text-xs font-medium" style={{ color: "#525252" }}>
+                          {log.system_status ?? "Unknown"}
+                        </span>
+                      )}
+                      {log.partner_status && (
+                        <p className="text-xs mt-0.5 truncate" style={{ color: "#8a8a8a" }}>
+                          {log.partner_status}
+                        </p>
+                      )}
+                      <p className="text-[10px] mt-1" style={{ color: "#b8a0a0" }}>
+                        {formatTs(log.event_timestamp ?? log.received_at)}
+                        {log.partner_name && ` · ${log.partner_name}`}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
 
 // ---- Indian States & UTs ----
 
@@ -1500,6 +1694,7 @@ export default function OrdersPage() {
   const [paymentFilter, setPaymentFilter] = useState("");
   const [modalChannel, setModalChannel] = useState<"Offline" | "Amazon" | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
+  const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pageSize = 30;
@@ -1773,9 +1968,15 @@ export default function OrdersPage() {
                       <span className="text-xs" style={{ color: "#8a8a8a" }}>—</span>
                     )}
                     {order.awb_code && (
-                      <span className="text-[10px] font-mono" style={{ color: "#b8a0a0" }}>
+                      <button
+                        onClick={() => setTrackingOrder(order)}
+                        className="text-[10px] font-mono flex items-center gap-0.5 hover:underline"
+                        style={{ color: "#b8a0a0" }}
+                        title="View tracking"
+                      >
+                        <MapPin size={8} />
                         {order.awb_code}
-                      </span>
+                      </button>
                     )}
                     {order.etd && statusCfg?.label !== "Delivered" && (
                       <span className="text-[10px] flex items-center gap-0.5" style={{ color: "#8a8a8a" }}>
@@ -1840,6 +2041,14 @@ export default function OrdersPage() {
 
       {/* Toast */}
       {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
+
+      {/* Tracking Panel */}
+      {trackingOrder && (
+        <TrackingPanel
+          order={trackingOrder}
+          onClose={() => setTrackingOrder(null)}
+        />
+      )}
     </div>
   );
 }

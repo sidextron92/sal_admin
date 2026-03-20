@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
          customer_name, customer_email, customer_phone, customer_city, customer_state,
          total_price, currency, financial_status, fulfillment_status,
          sr_status, payment_method, awb_code, courier_name, etd, cancelled_at,
-         customer_order_index,
+         customer_order_index, shipping_status,
          order_line_items ( title, quantity, discounted_unit_price, variant_title )`,
         { count: 'exact' }
       )
