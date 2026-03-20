@@ -56,7 +56,8 @@ Returns last 10 `sync_log` rows ordered by `synced_at DESC`.
 ### `POST /api/sync/shiprocket`
 `app/api/sync/shiprocket/route.ts`
 Fetches Shiprocket orders (last 7 days) → updates matching `orders` rows by `order_name = #${channel_order_id}`.
-Fields updated: `customer_name/email/phone/city/state`, `sr_order_id`, `sr_status`, `payment_method`, `awb_code`, `courier_name`, `etd`.
+Fields updated: `customer_name/email/phone/city/pincode/state/address`, `sr_order_id`, `sr_status`, `payment_method`, `awb_code`, `courier_name`, `etd`.
+Matches across **all** `sales_channel` values (Shopify, Offline, Amazon) — no channel filter.
 Returns `{ success, fetched, updated, duration_ms }`.
 
 ---
@@ -77,9 +78,10 @@ Returns `{ orders, total, page, pageSize }`.
 
 ### `GET /api/products`
 `app/api/products/route.ts`
-Paginated variants (50/page) with joined product info. Used by Inventory page.
+Paginated variants (50/page) with joined product info. Used by Inventory page and the Add Order variant picker.
 Query params: `page`, `search`, `low_stock` (bool), `stock_status` (`in_stock` | `out_of_stock`).
-Returns `{ variants, total, page, pageSize }`. Each variant includes `cost`, `virtual_inventory`, `physical_inventory`, `inventory_remark`, nested `products { ... }`.
+Returns `{ variants, total, page, pageSize }`. Each variant includes `cost`, `virtual_inventory`, `physical_inventory`, `inventory_remark`, nested `products { product_id, title, handle, image_url, vendor, product_type, status }`.
+**Note:** Add Order variant picker always passes `stock_status=in_stock` — zero-inventory variants are excluded.
 
 ---
 
@@ -95,6 +97,72 @@ Body: `{ cost: number }`
 Updates `virtual_inventory` + `physical_inventory` locally → DB trigger recalculates `inventory_quantity = virtual + physical` + logs to `inventory_logs` → **pushes new total to Shopify** via `inventorySetQuantities`.
 Body: `{ virtual_inventory: number, physical_inventory: number, remark?: string }`
 Returns `{ success, shopify_push: { success, pushed, errors } }`. Shopify push failure is non-fatal — local update always commits.
+
+---
+
+### `POST /api/orders/custom`
+`app/api/orders/custom/route.ts`
+Creates a manual order (Offline or Amazon channel) — inserts into `orders` + `order_line_items`, deducts inventory, pushes updated stock to Shopify, and **pushes the order to Shiprocket**.
+
+**Channels:** `Offline` → `order_id: OFFLINE-{timestamp}-{random}` · `Amazon` → `AMZ-{timestamp}-{random}`, requires `amazon_order_id` (prepended to `note` as `[AMZ: {id}]`).
+
+**`order_name` normalisation:** `#` prefix is always enforced server-side (user may omit it in the form).
+
+**Body:**
+```ts
+{
+  channel: 'Offline' | 'Amazon'
+  amazon_order_id?: string        // required if channel = Amazon
+  order_name: string              // e.g. "M-001" or "#M-001" — # auto-prepended
+  customer_name: string
+  customer_phone: string
+  customer_email?: string
+  customer_city: string
+  customer_pincode: string        // 6-digit, required
+  customer_state: string
+  customer_address?: string
+  payment_method: 'Prepaid' | 'COD'
+  fulfillment_status: 'FULFILLED' | 'UNFULFILLED'
+  note?: string
+  shipping_charges: number        // >= 0
+  weight: number                  // kg, > 0 (for Shiprocket)
+  length: number                  // cm
+  breadth: number                 // cm
+  height: number                  // cm
+  line_items: [{
+    variant_id, product_id, product_title, product_handle,
+    vendor, product_type, variant_title, sku,
+    quantity,             // integer >= 1
+    original_unit_price,
+    discount_percent      // 0–100
+  }]
+}
+```
+
+**Financials (computed server-side):**
+- `discounted_unit_price = original_unit_price × (1 − discount% / 100)`
+- `subtotal_price = Σ discounted_unit_price × quantity`
+- `total_price = subtotal + shipping_charges`
+
+**`orders` fields set:**
+`financial_status` → `PAID` (Prepaid) / `PENDING` (COD) · `sr_status` → `NEW` · `sales_channel` → channel value · `confirmed` → `true` · `currency` → `INR` · `total_tax` → `0`
+
+**Inventory deduction:** drains `physical_inventory` first, spills to `virtual_inventory`. Sets `inventory_changed_by: 'order'`, `inventory_remark: 'Order {id}'`. Warns (non-blocking) if qty > available stock. After DB update, pushes new totals to Shopify via `inventorySetQuantities` (non-fatal on failure).
+
+**Shiprocket push:** After Shopify write-back, pushes order to Shiprocket via `POST /orders/create/adhoc` (non-fatal). On success, saves `sr_order_id` + `sr_status` back to the `orders` row. Pickup location hardcoded as `'Delhi Warehouse EOK'`. `order_name` (stripped of `#`) is sent as Shiprocket's `order_id` — Shiprocket echoes it as `channel_order_id`, enabling the future sync join (`#channel_order_id = orders.order_name`). Line item `sku` field uses `product_type`, falling back to `'N/A'` if empty.
+
+**`order_line_items` fields:** `line_item_id: {order_id}-item-{index}`, title composed as `product_title - variant_title`, plus all pricing fields, `product_handle`, `product_type`, `vendor`, `sku`.
+
+Returns `{ success, order_id, shopify_push: { success, pushed, errors }, shiprocket_push: { success, sr_order_id?, error? }, inventory_warnings: string[] }`.
+
+**Rollback:** if line item insert fails, the order row is deleted to avoid orphaned orders.
+
+---
+
+### `GET /api/inventory/[variantId]/logs`
+`app/api/inventory/[variantId]/logs/route.ts`
+Returns all inventory log entries for a given variant, ordered by `changed_at DESC`.
+Returns `{ logs: [...] }`. Each log entry includes: `variant_id`, `product_id`, `variant_title`, `product_title`, `prev/new/delta` for virtual/physical/total, `remarks`, `changed_by`, `changed_at`.
 
 ---
 
@@ -155,7 +223,9 @@ All Shopify GIDs stripped to numeric IDs. Types: `ShopifyOrder`, `ShopifyLineIte
 ### `lib/shiprocket.ts`
 Env: `SHIPROCKET_EMAIL`, `SHIPROCKET_PASSWORD`. Base URL: `https://apiv2.shiprocket.in/v1/external`.
 
-**`fetchShiprocketOrders()`** — authenticates, paginates GET `/orders` (100/page, last 7 days via `updated_from`/`updated_to`). `updated_to` always set to tomorrow. Join key: `#${channel_order_id}` → `orders.order_name`. ETD `0000-00-00` coerced to null.
+**`fetchShiprocketOrders()`** — authenticates, paginates GET `/orders` (100/page, last 7 days via `updated_from`/`updated_to`). `updated_to` always set to tomorrow. Join key: `#${channel_order_id}` → `orders.order_name`. ETD `0000-00-00` coerced to null. Now also maps `customer_pincode`.
+
+**`pushOrderToShiprocket(input: ShiprocketOrderInput)`** — pushes a manual order to Shiprocket `POST /orders/create/adhoc`. Strips `#` from `order_name` for Shiprocket's `order_id`. Splits `customer_name` into `billing_customer_name` / `billing_last_name`. Sets `shipping_is_billing: true`. Maps `product_type` → `sku` (falls back to `'N/A'`). Pickup location: `'Delhi Warehouse EOK'` (hardcoded in route). Returns `ShiprocketPushResult { success, sr_order_id?, shipment_id?, status?, error? }`.
 
 **IP allowlist:** Shiprocket is IP-restricted. Dev IP: `106.215.80.229`. For Vercel, set `0.0.0.0/0`.
 
@@ -172,11 +242,12 @@ Uses `SUPABASE_SERVICE_ROLE_KEY` — bypasses RLS. Server-side only.
 ## Database Schema
 
 ### `orders`
-PK: `order_id` (Shopify numeric ID as TEXT).
+PK: `order_id` (Shopify numeric ID as TEXT for Shopify orders; `OFFLINE-{ts}-{rand}` or `AMZ-{ts}-{rand}` for manual orders).
 - Shopify columns: order fields, UTM/journey (first + last visit × 10 cols), `synced_at`
-- Shiprocket columns: `customer_name/email/phone/city/state`, `sr_order_id`, `sr_status`, `payment_method`, `awb_code`, `courier_name`, `etd`
+- Shiprocket columns: `customer_name/email/phone/city/pincode/state/address`, `sr_order_id`, `sr_status`, `payment_method`, `awb_code`, `courier_name`, `etd`
+- Manual order columns: `sales_channel` (`Offline` | `Amazon` | `Shopify` default), `customer_pincode`, `customer_address`
 - Always null (PII blocked): `customer_first_name`, `customer_last_name`
-- Indexes: `created_at DESC`, `financial_status`, `customer_id`
+- Indexes: `created_at DESC`, `financial_status`, `customer_id`, `sales_channel`
 - Known `sr_status`: `NEW`, `PICKED UP`, `IN TRANSIT`, `IN TRANSIT-EN-ROUTE`, `IN TRANSIT-AT DESTINATION HUB`, `DELIVERED`, `RTO INITIATED`, `RTO DELIVERED`, `CANCELED`, `UNDELIVERED-3RD ATTEMPT`, `SELF FULFILLED`
 
 ### `order_line_items`
@@ -198,7 +269,7 @@ Inventory management (never overwritten by sync):
 - `virtual_inventory` — anticipated/pre-added stock (default 0, ≥ 0)
 - `physical_inventory` — actual on-hand stock (default 0, ≥ 0)
 - `inventory_remark` — last change context
-- `inventory_changed_by` — `'admin'` | `'shopify_sync'` | `'bulk_upload'`
+- `inventory_changed_by` — `'admin'` | `'shopify_sync'` | `'bulk_upload'` | `'order'`
 
 **Invariant:** `inventory_quantity = virtual_inventory + physical_inventory` (maintained by DB trigger).
 
