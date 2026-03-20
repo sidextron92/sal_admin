@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Search,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Receipt,
   X,
   Pencil,
@@ -228,6 +229,97 @@ function SpendByFunction({ byFunction }: { byFunction: ByFunction[] }) {
   );
 }
 
+// ── Function Filter Dropdown ──────────────────────────────────────────────
+
+function FunctionFilterDropdown({
+  value,
+  onChange,
+}: {
+  value: ExpenseFunction | "";
+  onChange: (v: ExpenseFunction | "") => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isActive = value !== "";
+  const selectedLabel = FUNCTION_OPTIONS.find((o) => o.value === value)?.label ?? "All Functions";
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 px-3.5 py-2 text-sm font-medium transition-all duration-100"
+        style={{
+          borderRadius: 22,
+          ...(isActive
+            ? { backgroundColor: "#f9e8eb", color: "#d57282", border: "1px solid #d57282" }
+            : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }),
+        }}
+      >
+        {selectedLabel}
+        <ChevronDown
+          size={13}
+          style={{
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 150ms ease",
+          }}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute top-full mt-1.5 left-0 z-50 py-1 overflow-hidden"
+          style={{
+            backgroundColor: "#ffffff",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+            border: "1px solid #E2E2E2",
+            borderRadius: 14,
+            minWidth: 180,
+          }}
+        >
+          <button
+            onClick={() => { onChange(""); setOpen(false); }}
+            className="w-full text-left px-3 py-2 text-sm transition-colors"
+            style={{
+              color: value === "" ? "#d57282" : "#525252",
+              fontWeight: value === "" ? 600 : 400,
+              backgroundColor: "transparent",
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+          >
+            All Functions
+          </button>
+          {FUNCTION_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => { onChange(o.value); setOpen(false); }}
+              className="w-full text-left px-3 py-2 text-sm transition-colors"
+              style={{
+                color: value === o.value ? "#d57282" : "#525252",
+                fontWeight: value === o.value ? 600 : 400,
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Skeleton rows ─────────────────────────────────────────────────────────
 
 function SkeletonRows() {
@@ -249,6 +341,87 @@ function SkeletonRows() {
         </tr>
       ))}
     </>
+  );
+}
+
+// ── Form Function Select (modal) ──────────────────────────────────────────
+
+function FormFunctionSelect({
+  value,
+  onChange,
+  inputClass,
+  inputStyle,
+}: {
+  value: ExpenseFunction | "";
+  onChange: (v: ExpenseFunction | "") => void;
+  inputClass: string;
+  inputStyle: React.CSSProperties;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const selectedLabel = FUNCTION_OPTIONS.find((o) => o.value === value)?.label;
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={inputClass + " w-full flex items-center justify-between text-left"}
+        style={inputStyle}
+      >
+        <span style={{ color: value ? "#525252" : "#c0b8b8" }}>
+          {selectedLabel ?? "Select function…"}
+        </span>
+        <ChevronDown
+          size={14}
+          style={{
+            color: "#8a8a8a",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 150ms ease",
+            flexShrink: 0,
+          }}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute top-full mt-1 left-0 right-0 z-50 py-1 overflow-hidden"
+          style={{
+            backgroundColor: "#ffffff",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+            border: "1px solid #E2E2E2",
+            borderRadius: 12,
+          }}
+        >
+          {FUNCTION_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => { onChange(o.value); setOpen(false); }}
+              className="w-full text-left px-3 py-2 text-sm transition-colors"
+              style={{
+                color: value === o.value ? "#d57282" : "#525252",
+                fontWeight: value === o.value ? 600 : 400,
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -372,17 +545,12 @@ function ExpenseModal({
             <label className={labelClass} style={labelStyle}>
               Function <span style={{ color: "#e05252" }}>*</span>
             </label>
-            <select
+            <FormFunctionSelect
               value={form.function_name}
-              onChange={(e) => set("function_name", e.target.value as ExpenseFunction | "")}
-              className={inputClass}
-              style={inputStyle}
-            >
-              <option value="">Select function…</option>
-              {FUNCTION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+              onChange={(v) => set("function_name", v)}
+              inputClass={inputClass}
+              inputStyle={inputStyle}
+            />
           </div>
 
           {/* Type */}
@@ -783,22 +951,10 @@ export default function ExpensesPage() {
         </div>
 
         {/* Function dropdown */}
-        <select
+        <FunctionFilterDropdown
           value={functionFilter}
-          onChange={(e) => setFunctionFilter(e.target.value as ExpenseFunction | "")}
-          className="px-3.5 py-2 text-sm font-medium outline-none"
-          style={{
-            borderRadius: 22,
-            ...(functionFilter
-              ? { backgroundColor: "#f9e8eb", color: "#d57282", border: "1px solid #d57282" }
-              : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }),
-          }}
-        >
-          <option value="">All Functions</option>
-          {FUNCTION_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
+          onChange={setFunctionFilter}
+        />
 
         {/* Type filter */}
         <div
@@ -833,7 +989,7 @@ export default function ExpensesPage() {
             onChange={(e) => setDateFrom(e.target.value)}
             className="px-3 py-2 text-sm outline-none"
             style={{
-              borderRadius: 14,
+              borderRadius: 12,
               border: "1px solid #E2E2E2",
               color: "#525252",
               backgroundColor: "#ffffff",
@@ -850,7 +1006,7 @@ export default function ExpensesPage() {
             onChange={(e) => setDateTo(e.target.value)}
             className="px-3 py-2 text-sm outline-none"
             style={{
-              borderRadius: 14,
+              borderRadius: 12,
               border: "1px solid #E2E2E2",
               color: "#525252",
               backgroundColor: "#ffffff",
