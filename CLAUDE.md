@@ -234,6 +234,30 @@ Returns:
 
 ---
 
+### `GET /api/expenses` · `POST /api/expenses`
+`app/api/expenses/route.ts`
+Paginated expense list (30/page) with inline summary aggregation.
+Query params: `page`, `search` (ilike on `particulars` OR `remarks`), `function` (exact match on `function_name`), `type` (ilike), `date_from`, `date_to`.
+Returns `{ expenses, total, page, pageSize, summary: { total_base, total_tax, total_amount, by_function: [{function_name, total_amount, count}] } }`. Summary reflects same filters as list.
+`POST` body: `{ function_name, type?, particulars, expense_date, base_amount, tax_amount?, remarks?, is_recurring }`. Returns 201 `{ success, expense }`.
+
+---
+
+### `PATCH /api/expenses/[id]` · `DELETE /api/expenses/[id]`
+`app/api/expenses/[id]/route.ts`
+`PATCH` — partial update, all fields optional, sets `updated_at`. Returns `{ success, expense }`. 404 if not found.
+`DELETE` — existence-checked delete. Returns `{ success }`. 404 if not found.
+
+---
+
+### `GET /api/expenses/export`
+`app/api/expenses/export/route.ts`
+Returns CSV of **all** expenses (no filters, no pagination), ordered `expense_date DESC`.
+Columns: `Date, Function, Type, Particulars, Base Amount, Tax Amount, Total Amount, Remarks, Recurring, Created At`.
+Headers: `Content-Type: text/csv`, `Content-Disposition: attachment; filename="maeri_expenses.csv"`.
+
+---
+
 ## Library Modules
 
 ### `lib/shopify.ts`
@@ -323,6 +347,9 @@ Seeded: 53 Shiprocket status mappings covering all known Shiprocket statuses.
 ### `order_tracking_logs`
 One row per inbound webhook event. PK: `id` (bigserial). Columns: `order_id` (nullable FK, null for orphan events where AWB has no match), `shipping_partner_id` FK, `awb_no`, `system_status` (null if unmapped), `partner_status`, `partner_payload` (full raw JSONB — not exposed in API response), `event_timestamp` (parsed from payload), `received_at`. Indexes: `order_id`, `awb_no`, `received_at DESC`.
 
+### `expenses`
+PK: `id` (bigserial). Columns: `function_name` (CHECK: `MARKETING`|`EMPLOYEE`|`LOGISTIC`|`PACKAGING`|`SOFTWARE`|`PAYMENT_GATEWAY`|`MISCELLANEOUS`), `type` (nullable), `particulars`, `expense_date` (date), `base_amount` (numeric 10,2), `tax_amount` (numeric 10,2, default 0), `total_amount` (generated: `base_amount + tax_amount`), `remarks` (nullable), `is_recurring` (bool, default false), `created_at`, `updated_at`. Indexes: `expense_date DESC`, `function_name`.
+
 ---
 
 ## DB Trigger: `trg_inventory_change`
@@ -351,6 +378,7 @@ Both modes write to `inventory_logs`.
 | `/dashboard/orders` | `app/dashboard/orders/page.tsx` | Built — live data |
 | `/dashboard/inventory` | `app/dashboard/inventory/page.tsx` | Built — live data |
 | `/dashboard/settings` | `app/dashboard/settings/page.tsx` | Built |
+| `/dashboard/expenses` | `app/dashboard/expenses/page.tsx` | Built — live data |
 | `/dashboard/shipping` | — | Planned (Phase 3) |
 | `/dashboard/ads` | — | Planned (Phase 5) |
 | `/dashboard/reconciliation` | — | Planned (Phase 5) |
@@ -371,6 +399,14 @@ Both modes write to `inventory_logs`.
 - **TrackingPanel** — fixed right slide-in panel (380px). Opened by clicking the AWB chip on any order row. Fetches `GET /api/orders/[orderId]/tracking` and renders a vertical timeline: system status badge + partner status text + timestamp. Empty state + loading skeleton. Backdrop click closes panel.
 - AWB code in status column is a `<button>` with a `MapPin` icon — only shown when `awb_code` is present.
 
+**Expenses page (`app/dashboard/expenses/page.tsx`):**
+- **Summary cards** — Total Spend, Total Tax, Entries count. All reflect active filters.
+- **Function breakdown strip** — compact pills showing spend per function, only functions with data shown.
+- **Filter bar** — debounced keyword search (particulars/remarks), Function dropdown, Type text input, Date From/To. Default: last 30 days. Reset button appears when filters differ from default.
+- **Expense table** — colored function badges, recurring icon (RefreshCw), inline delete confirmation (replaces action buttons in-row).
+- **Add/Edit modal** — 9 fields: Function, Type, Particulars, Date, Base Amount, Tax Amount (live Total), Remarks, Recurring toggle.
+- **CSV Export** — triggers `GET /api/expenses/export`, downloads full dataset regardless of active filters.
+
 ---
 
 ## Roadmap
@@ -380,6 +416,7 @@ Both modes write to `inventory_logs`.
 - [x] Phase 2: Orders page — live data + Shiprocket sync
 - [x] Phase 2.5: Inventory — cost tracking, virtual/physical split, bulk Excel, Shopify write-back
 - [x] Phase 3: Shiprocket shipping updates — webhook ingestion, status mapping, tracking timeline UI
+- [x] Phase 3.5: Expenses module — full CRUD, filters, summary cards, CSV export
 - [ ] Phase 4: Voice AI triggers
 - [ ] Phase 5: Meta Ads dashboard, Reconciliation
 - [ ] Shopify sync: full historical order pagination
