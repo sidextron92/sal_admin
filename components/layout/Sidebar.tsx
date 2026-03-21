@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
-  Truck,
+  TrendingUp,
   Package,
   BarChart2,
   FileText,
@@ -15,7 +16,9 @@ import {
   ClipboardList,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   X,
+  RefreshCw,
 } from "lucide-react";
 import {
   Tooltip,
@@ -24,24 +27,39 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 
-interface NavItem {
+interface SubNavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   built: boolean;
 }
 
+interface NavItem {
+  label: string;
+  href?: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  built: boolean;
+  children?: SubNavItem[];
+}
+
 const NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/dashboard/overview", icon: LayoutDashboard, built: true },
   { label: "My Orders", href: "/dashboard/orders", icon: ShoppingBag, built: true },
-  { label: "Shipping", href: "/dashboard/shipping", icon: Truck, built: false },
+  { label: "Analytics", href: "/dashboard/analytics", icon: TrendingUp, built: true },
   { label: "Inventory", href: "/dashboard/inventory", icon: Package, built: true },
   { label: "Purchase Invoices", href: "/dashboard/purchase-invoices", icon: ClipboardList, built: true },
   { label: "Expenses", href: "/dashboard/expenses", icon: Receipt, built: true },
   { label: "P&L", href: "/dashboard/pnl", icon: LineChart, built: true },
   { label: "Ads", href: "/dashboard/ads", icon: BarChart2, built: false },
   { label: "Reconciliation", href: "/dashboard/reconciliation", icon: FileText, built: false },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings, built: true },
+  {
+    label: "Settings",
+    icon: Settings,
+    built: true,
+    children: [
+      { label: "Sync", href: "/dashboard/settings/sync", icon: RefreshCw, built: true },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -58,6 +76,29 @@ export default function Sidebar({
   onMobileClose,
 }: SidebarProps) {
   const pathname = usePathname();
+
+  // Auto-expand accordion groups when a child route is active
+  const defaultOpen = NAV_ITEMS.filter(
+    (item) => item.children?.some((c) => pathname.startsWith(c.href))
+  ).map((item) => item.label);
+  const [openGroups, setOpenGroups] = useState<string[]>(defaultOpen);
+
+  // Keep accordion open when navigating to a child route
+  useEffect(() => {
+    NAV_ITEMS.forEach((item) => {
+      if (item.children?.some((c) => pathname.startsWith(c.href))) {
+        setOpenGroups((prev) =>
+          prev.includes(item.label) ? prev : [...prev, item.label]
+        );
+      }
+    });
+  }, [pathname]);
+
+  const toggleGroup = (label: string) => {
+    setOpenGroups((prev) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
+    );
+  };
 
   const content = (
     <div
@@ -123,13 +164,112 @@ export default function Sidebar({
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">
         {NAV_ITEMS.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
+
+          // ── Accordion item (has children, no href) ──
+          if (item.children) {
+            const isGroupActive = item.children.some((c) =>
+              pathname.startsWith(c.href)
+            );
+            const isOpen = !collapsed && openGroups.includes(item.label);
+
+            return (
+              <div key={item.label}>
+                {/* Group header button */}
+                {collapsed ? (
+                  <Tooltip>
+                    <TooltipTrigger render={<div />}>
+                      <button
+                        onClick={() => !collapsed && toggleGroup(item.label)}
+                        className="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 hover:bg-[#f0e8e8]"
+                        style={{ color: isGroupActive ? "#d57282" : "#525252" }}
+                      >
+                        <Icon size={17} className="shrink-0" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{item.label}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <button
+                    onClick={() => toggleGroup(item.label)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 hover:bg-[#f0e8e8]"
+                    style={{ color: isGroupActive ? "#d57282" : "#525252" }}
+                  >
+                    <Icon size={17} className="shrink-0" />
+                    <span className="flex-1 leading-none text-left">{item.label}</span>
+                    <ChevronDown
+                      size={14}
+                      className="shrink-0 transition-transform duration-200"
+                      style={{
+                        transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                        color: "#b8a0a0",
+                      }}
+                    />
+                  </button>
+                )}
+
+                {/* Sub-items */}
+                {isOpen && (
+                  <div
+                    className="mt-1 space-y-0.5"
+                    style={{ marginLeft: "52px", paddingLeft: "10px", borderLeft: "1.5px solid #e8dede" }}
+                  >
+                    {item.children.map((child) => {
+                      const ChildIcon = child.icon;
+                      const isChildActive = pathname.startsWith(child.href);
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.built ? child.href : "#"}
+                          onClick={!child.built ? (e) => e.preventDefault() : undefined}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150"
+                          style={{
+                            backgroundColor: isChildActive ? "#d57282" : undefined,
+                            color: isChildActive ? "#ffffff" : "#525252",
+                            boxShadow: isChildActive
+                              ? "0 2px 10px rgba(213, 114, 130, 0.22)"
+                              : undefined,
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isChildActive)
+                              (e.currentTarget as HTMLElement).style.backgroundColor = "#f0e8e8";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isChildActive)
+                              (e.currentTarget as HTMLElement).style.backgroundColor = "";
+                          }}
+                        >
+                          <ChildIcon size={15} className="shrink-0" />
+                          <span className="flex-1 leading-none">{child.label}</span>
+                          {!child.built && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0 h-4 font-medium"
+                              style={{
+                                backgroundColor: "#f9e8eb",
+                                color: "#d57282",
+                                border: "none",
+                              }}
+                            >
+                              Soon
+                            </Badge>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // ── Regular nav item ──
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href! + "/");
 
           const linkContent = (
             <Link
-              href={item.built ? item.href : "#"}
+              href={item.built ? item.href! : "#"}
               onClick={!item.built ? (e) => e.preventDefault() : undefined}
               className={`
                 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150

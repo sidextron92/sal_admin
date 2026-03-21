@@ -8,14 +8,13 @@ import Header from "@/components/layout/Header";
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard/overview": "Overview",
   "/dashboard/orders": "My Orders",
-  "/dashboard/shipping": "Shipping",
+  "/dashboard/analytics": "Analytics",
   "/dashboard/inventory": "Inventory",
   "/dashboard/expenses": "Expenses",
   "/dashboard/pnl": "P&L",
   "/dashboard/ads": "Ads",
   "/dashboard/reconciliation": "Reconciliation",
-  "/dashboard/settings": "Settings",
-  "/dashboard/settings/": "Settings",
+  "/dashboard/settings/sync": "Settings · Sync",
 };
 
 export default function DashboardLayout({
