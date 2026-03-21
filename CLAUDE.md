@@ -258,6 +258,14 @@ Headers: `Content-Type: text/csv`, `Content-Disposition: attachment; filename="m
 
 ---
 
+### `GET /api/pnl`
+`app/api/pnl/route.ts`
+Returns a full D2C P&L snapshot for a date range. See `docs/pnl_claude.md` for full logic.
+Query params: `month` (YYYY-MM), `date_from`/`date_to` (YYYY-MM-DD, takes precedence), `channel` (`ALL|Shopify|Amazon|Offline`, default `ALL`). Default: current month.
+Returns `{ revenue, expenses, rto, trend, meta }`. All margin computations done server-side via two Supabase RPCs (`get_pnl_data`, `get_pnl_monthly_trend`) + in-process expense aggregation.
+
+---
+
 ## Library Modules
 
 ### `lib/shopify.ts`
