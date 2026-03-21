@@ -566,6 +566,59 @@ function PnLTrendChart({ trend }: { trend: TrendMonth[] }) {
   );
 }
 
+// ── Month/Year Picker (Safari-safe replacement for input[type=month]) ──────
+
+const MONTH_NAMES = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+
+function MonthYearPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [selYear, selMonth] = value.split("-").map(Number);
+  const currentYear = new Date().getFullYear();
+  const years = [currentYear, currentYear - 1, currentYear - 2];
+
+  const selectStyle: React.CSSProperties = {
+    borderRadius: 12,
+    border: "1px solid #E2E2E2",
+    color: "#525252",
+    backgroundColor: "#ffffff",
+    fontSize: 14,
+    padding: "8px 12px",
+    outline: "none",
+    cursor: "pointer",
+    fontFamily: "var(--font-poppins), sans-serif",
+    appearance: "none",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 10px center",
+    paddingRight: 30,
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <select
+        value={selMonth}
+        onChange={(e) => onChange(`${selYear}-${String(Number(e.target.value)).padStart(2, "0")}`)}
+        style={selectStyle}
+      >
+        {MONTH_NAMES.map((name, i) => (
+          <option key={i + 1} value={i + 1}>{name}</option>
+        ))}
+      </select>
+      <select
+        value={selYear}
+        onChange={(e) => onChange(`${e.target.value}-${String(selMonth).padStart(2, "0")}`)}
+        style={selectStyle}
+      >
+        {years.map((y) => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 // ── Skeleton ───────────────────────────────────────────────────────────────
 
 function PnLSkeleton() {
@@ -697,18 +750,7 @@ export default function PnLPage() {
 
         {/* Date selector */}
         {filterMode === "month" ? (
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-3 py-2 text-sm outline-none"
-            style={{
-              borderRadius: 12,
-              border: "1px solid #E2E2E2",
-              color: "#525252",
-              backgroundColor: "#ffffff",
-            }}
-          />
+          <MonthYearPicker value={selectedMonth} onChange={setSelectedMonth} />
         ) : (
           <div className="flex items-center gap-2">
             <input
