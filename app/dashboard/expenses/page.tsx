@@ -84,6 +84,15 @@ const FUNCTION_OPTIONS: { value: ExpenseFunction; label: string }[] = [
   { value: "MISCELLANEOUS",    label: "Miscellaneous" },
 ];
 
+const FUNCTION_TYPES: Partial<Record<ExpenseFunction, string[]>> = {
+  MARKETING:       ["Ads", "Influencer", "Communication"],
+  EMPLOYEE:        ["Salary", "Agency"],
+  LOGISTIC:        ["Forward", "Reverse"],
+  PACKAGING:       ["Packaging Material", "Branding"],
+  SOFTWARE:        ["Platform Fee", "Tools"],
+  PAYMENT_GATEWAY: ["Checkout", "Razorpay"],
+};
+
 const FUNCTION_COLORS: Record<ExpenseFunction, { bg: string; color: string }> = {
   MARKETING:       { bg: "#fde8ef", color: "#c2185b" },
   EMPLOYEE:        { bg: "#e8f5e9", color: "#2e7d32" },
@@ -425,6 +434,143 @@ function FormFunctionSelect({
   );
 }
 
+// ── Form Type Select (modal) ──────────────────────────────────────────────
+
+function FormTypeSelect({
+  functionName,
+  value,
+  onChange,
+  inputClass,
+  inputStyle,
+}: {
+  functionName: ExpenseFunction | "";
+  value: string;
+  onChange: (v: string) => void;
+  inputClass: string;
+  inputStyle: React.CSSProperties;
+}) {
+  const presets = functionName ? (FUNCTION_TYPES[functionName] ?? []) : [];
+  const hasPresets = presets.length > 0;
+
+  // Determine initial mode: if value matches a preset → preset, else other
+  const isOtherValue = value !== "" && hasPresets && !presets.includes(value);
+  const [mode, setMode] = useState<"preset" | "other">(isOtherValue ? "other" : "preset");
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  // No presets (MISCELLANEOUS) — plain text input
+  if (!hasPresets) {
+    return (
+      <input
+        type="text"
+        placeholder="Enter type…"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={inputClass}
+        style={inputStyle}
+      />
+    );
+  }
+
+  if (mode === "other") {
+    return (
+      <div className="space-y-2">
+        <input
+          type="text"
+          placeholder="Enter custom type…"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={inputClass}
+          style={inputStyle}
+          autoFocus
+        />
+        <button
+          type="button"
+          onClick={() => { setMode("preset"); onChange(""); }}
+          className="text-xs"
+          style={{ color: "#d57282" }}
+        >
+          ← Back to presets
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={inputClass + " w-full flex items-center justify-between text-left"}
+        style={inputStyle}
+      >
+        <span style={{ color: value ? "#525252" : "#c0b8b8" }}>
+          {value || "Select type…"}
+        </span>
+        <ChevronDown
+          size={14}
+          style={{
+            color: "#8a8a8a",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 150ms ease",
+            flexShrink: 0,
+          }}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute top-full mt-1 left-0 right-0 z-50 py-1 overflow-hidden"
+          style={{
+            backgroundColor: "#ffffff",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+            border: "1px solid #E2E2E2",
+            borderRadius: 12,
+          }}
+        >
+          {presets.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => { onChange(preset); setOpen(false); }}
+              className="w-full text-left px-3 py-2 text-sm transition-colors"
+              style={{
+                color: value === preset ? "#d57282" : "#525252",
+                fontWeight: value === preset ? 600 : 400,
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+            >
+              {preset}
+            </button>
+          ))}
+          <div style={{ borderTop: "1px solid #f0eae6", margin: "4px 0" }} />
+          <button
+            type="button"
+            onClick={() => { setMode("other"); onChange(""); setOpen(false); }}
+            className="w-full text-left px-3 py-2 text-sm transition-colors"
+            style={{ color: "#8a8a8a", backgroundColor: "transparent" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+          >
+            Other…
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Add / Edit Modal ──────────────────────────────────────────────────────
 
 function ExpenseModal({
@@ -547,7 +693,7 @@ function ExpenseModal({
             </label>
             <FormFunctionSelect
               value={form.function_name}
-              onChange={(v) => set("function_name", v)}
+              onChange={(v) => { set("function_name", v); set("type", ""); }}
               inputClass={inputClass}
               inputStyle={inputStyle}
             />
@@ -558,13 +704,12 @@ function ExpenseModal({
             <label className={labelClass} style={labelStyle}>
               Type <span style={{ color: "#8a8a8a" }}>(optional)</span>
             </label>
-            <input
-              type="text"
-              placeholder="e.g. Ads, Salary, Subscription…"
+            <FormTypeSelect
+              functionName={form.function_name}
               value={form.type}
-              onChange={(e) => set("type", e.target.value)}
-              className={inputClass}
-              style={inputStyle}
+              onChange={(v) => set("type", v)}
+              inputClass={inputClass}
+              inputStyle={inputStyle}
             />
           </div>
 
