@@ -39,7 +39,13 @@ export async function GET(req: NextRequest) {
     date_to = lastDayOfMonth(y, m);
   }
 
-  const [pnlRes, trendRes, expensesRes] = await Promise.all([
+  // Start of 12-month trend window (always global — not channel-filtered for expenses)
+  const trendWindowStart = new Date();
+  trendWindowStart.setMonth(trendWindowStart.getMonth() - 11);
+  trendWindowStart.setDate(1);
+  const trendExpStart = `${trendWindowStart.getFullYear()}-${String(trendWindowStart.getMonth() + 1).padStart(2, "0")}-01`;
+
+  const [pnlRes, trendRes, expensesRes, trendExpensesRes] = await Promise.all([
     supabaseAdmin.rpc("get_pnl_data", {
       p_date_from: date_from,
       p_date_to: date_to,
@@ -54,6 +60,10 @@ export async function GET(req: NextRequest) {
       .select("function_name, total_amount")
       .gte("expense_date", date_from)
       .lte("expense_date", date_to),
+    supabaseAdmin
+      .from("expenses")
+      .select("function_name, total_amount, expense_date")
+      .gte("expense_date", trendExpStart),
   ]);
 
   if (pnlRes.error) {
@@ -64,6 +74,9 @@ export async function GET(req: NextRequest) {
   }
   if (expensesRes.error) {
     return NextResponse.json({ error: expensesRes.error.message }, { status: 500 });
+  }
+  if (trendExpensesRes.error) {
+    return NextResponse.json({ error: trendExpensesRes.error.message }, { status: 500 });
   }
 
   const raw = pnlRes.data?.[0] ?? {
@@ -133,12 +146,31 @@ export async function GET(req: NextRequest) {
       ebitda_margin_pct,
     },
     rto: { rto_count, rto_rate_pct },
-    trend: (trendRes.data ?? []).map((r: { month_label: string; net_revenue: number; cogs: number; gross_profit: number }) => ({
-      month_label: r.month_label,
-      net_revenue: Number(r.net_revenue),
-      cogs: Number(r.cogs),
-      gross_profit: Number(r.gross_profit),
-    })),
+    trend: (() => {
+      // Build monthly expense map keyed by "YYYY-MM-01"
+      const monthlyExp: Record<string, Record<string, number>> = {};
+      for (const row of trendExpensesRes.data ?? []) {
+        const key = (row.expense_date as string).substring(0, 7) + "-01";
+        if (!monthlyExp[key]) monthlyExp[key] = {};
+        monthlyExp[key][row.function_name] = (monthlyExp[key][row.function_name] ?? 0) + Number(row.total_amount);
+      }
+      return (trendRes.data ?? []).map((r: { month_start: string; month_label: string; net_revenue: number; cogs: number; gross_profit: number }) => {
+        const exp = monthlyExp[r.month_start] ?? {};
+        const nr = Number(r.net_revenue);
+        const cm1 = Number(r.gross_profit);
+        const cm2 = cm1 - (exp["LOGISTIC"] ?? 0) - (exp["PACKAGING"] ?? 0) - (exp["PAYMENT_GATEWAY"] ?? 0);
+        const cm3 = cm2 - (exp["MARKETING"] ?? 0);
+        const ebitda = cm3 - (exp["EMPLOYEE"] ?? 0) - (exp["SOFTWARE"] ?? 0) - (exp["MISCELLANEOUS"] ?? 0);
+        return {
+          month_label: r.month_label,
+          net_revenue: nr,
+          cm1,
+          cm2,
+          cm3,
+          ebitda,
+        };
+      });
+    })(),
     meta: {
       date_from,
       date_to,

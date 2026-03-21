@@ -10,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  ReferenceLine,
 } from "recharts";
 import { TrendingUp, AlertCircle, Info } from "lucide-react";
 
@@ -53,8 +54,10 @@ interface PnLRto {
 interface TrendMonth {
   month_label: string;
   net_revenue: number;
-  cogs: number;
-  gross_profit: number;
+  cm1: number;
+  cm2: number;
+  cm3: number;
+  ebitda: number;
 }
 
 interface PnLResponse {
@@ -445,12 +448,16 @@ function formatChartINR(value: number) {
   return `₹${value}`;
 }
 
+const PCT_SERIES = new Set(["CM1", "CM2", "CM3", "EBITDA"]);
+
 function TrendTooltip({ active, payload, label }: {
   active?: boolean;
   payload?: { name: string; value: number; color: string }[];
   label?: string;
 }) {
   if (!active || !payload?.length) return null;
+  const netRevEntry = payload.find((p) => p.name === "Net Revenue");
+  const netRev = netRevEntry ? netRevEntry.value : 0;
   return (
     <div
       className="rounded-xl px-3 py-2.5 text-xs"
@@ -459,18 +466,31 @@ function TrendTooltip({ active, payload, label }: {
         backgroundColor: "#fff",
         color: "#525252",
         boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-        minWidth: 140,
+        minWidth: 160,
       }}
     >
       <p className="font-semibold mb-1.5" style={{ color: "#525252" }}>{label}</p>
-      {payload.map((p) => (
-        <p key={p.name} style={{ color: p.color }}>
-          {p.name}: {formatChartINR(p.value)}
-        </p>
-      ))}
+      {payload.map((p) => {
+        const pct = PCT_SERIES.has(p.name) && netRev !== 0
+          ? ` (${((p.value / netRev) * 100).toFixed(1)}%)`
+          : "";
+        return (
+          <p key={p.name} style={{ color: p.color }}>
+            {p.name}: {formatChartINR(p.value)}<span style={{ color: "#8a8a8a" }}>{pct}</span>
+          </p>
+        );
+      })}
     </div>
   );
 }
+
+const TREND_SERIES = [
+  { key: "net_revenue", name: "Net Revenue", color: "#d57282" },
+  { key: "cm1",         name: "CM1",         color: "#27a559" },
+  { key: "cm2",         name: "CM2",         color: "#4a9fde" },
+  { key: "cm3",         name: "CM3",         color: "#f0a64e" },
+  { key: "ebitda",      name: "EBITDA",      color: "#7c6fde" },
+];
 
 function PnLTrendChart({ trend }: { trend: TrendMonth[] }) {
   if (!trend || trend.length === 0) {
@@ -481,13 +501,18 @@ function PnLTrendChart({ trend }: { trend: TrendMonth[] }) {
           backgroundColor: "#ffffff",
           boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
           border: "1px solid #E2E2E2",
-          minHeight: 240,
+          minHeight: 280,
         }}
       >
         <p className="text-sm" style={{ color: "#8a8a8a" }}>No trend data yet.</p>
       </div>
     );
   }
+
+  // Check if any value goes negative (need reference line)
+  const hasNegative = trend.some(
+    (r) => r.cm1 < 0 || r.cm2 < 0 || r.cm3 < 0 || r.ebitda < 0
+  );
 
   return (
     <div
@@ -501,12 +526,12 @@ function PnLTrendChart({ trend }: { trend: TrendMonth[] }) {
       <div className="flex items-center gap-2 mb-4">
         <div style={{ width: 3, height: 14, backgroundColor: "#d57282", borderRadius: 2, flexShrink: 0 }} />
         <p className="text-sm font-semibold" style={{ color: "#525252" }}>
-          Revenue vs Gross Profit · Last 12 Months
+          Margin Trend · Last 12 Months
         </p>
       </div>
 
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={trend} barSize={10} barGap={2}>
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={trend} barSize={6} barGap={1}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0F0F0" />
           <XAxis
             dataKey="month_label"
@@ -519,17 +544,22 @@ function PnLTrendChart({ trend }: { trend: TrendMonth[] }) {
             tickLine={false}
             tick={{ fontSize: 11, fill: "#8a8a8a" }}
             tickFormatter={formatChartINR}
-            width={44}
+            width={48}
           />
-          <Tooltip content={<TrendTooltip />} cursor={{ fill: "#f9e8eb", opacity: 0.4 }} />
-          <Legend
-            wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
-            formatter={(value: string) =>
-              value === "net_revenue" ? "Net Revenue" : "Gross Profit"
-            }
-          />
-          <Bar dataKey="net_revenue" name="Net Revenue" fill="#d57282" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="gross_profit" name="Gross Profit" fill="#27a559" radius={[4, 4, 0, 0]} />
+          {hasNegative && (
+            <ReferenceLine y={0} stroke="#c0b8b8" strokeWidth={1} />
+          )}
+          <Tooltip content={<TrendTooltip />} cursor={{ fill: "#f9e8eb", opacity: 0.3 }} />
+          <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
+          {TREND_SERIES.map((s) => (
+            <Bar
+              key={s.key}
+              dataKey={s.key}
+              name={s.name}
+              fill={s.color}
+              radius={[3, 3, 0, 0]}
+            />
+          ))}
         </BarChart>
       </ResponsiveContainer>
     </div>
