@@ -360,11 +360,9 @@ function PnLWaterfallTable({ data }: { data: PnLResponse }) {
                 {row.label}
               </span>
               {row.tooltip && (
-                <Info
-                  size={11}
-                  style={{ color: "#c0b8b8", flexShrink: 0 }}
-                  title={row.tooltip}
-                />
+                <span title={row.tooltip} style={{ display: "inline-flex", flexShrink: 0 }}>
+                  <Info size={11} style={{ color: "#c0b8b8" }} />
+                </span>
               )}
             </div>
 
