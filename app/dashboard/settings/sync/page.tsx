@@ -8,7 +8,6 @@ import {
   Clock,
   ShoppingBag,
   CalendarClock,
-  ChevronRight,
   Loader2,
   Truck,
   Package,
@@ -606,33 +605,192 @@ export default function SyncPage() {
 
       {/* ── SCHEDULED JOBS TAB ── */}
       {activeTab === "Scheduled Jobs" && (
-        <div
-          className="rounded-2xl p-8 flex flex-col items-center text-center"
-          style={{
-            backgroundColor: "#ffffff",
-            boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
-            border: "1px solid #E2E2E2",
-          }}
-        >
+        <div className="space-y-4">
+          {/* Info banner */}
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-            style={{ backgroundColor: "#f9e8eb" }}
+            className="rounded-2xl px-5 py-4 flex items-start gap-3"
+            style={{ backgroundColor: "#f9e8eb", border: "1px solid #f0d0d6" }}
           >
-            <CalendarClock size={22} style={{ color: "#d57282" }} />
+            <CalendarClock size={16} style={{ color: "#d57282", marginTop: 1, flexShrink: 0 }} />
+            <div>
+              <p className="text-xs font-semibold" style={{ color: "#d57282" }}>
+                Powered by GitHub Actions
+              </p>
+              <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "#b86070" }}>
+                Syncs run automatically via the workflow at{" "}
+                <code className="font-mono bg-white/60 px-1 rounded">.github/workflows/sync.yml</code>.
+                Add <code className="font-mono bg-white/60 px-1 rounded">APP_URL</code> and{" "}
+                <code className="font-mono bg-white/60 px-1 rounded">CRON_SECRET</code> to your repo
+                secrets to activate.
+              </p>
+            </div>
           </div>
-          <p className="text-sm font-semibold mb-1" style={{ color: "#525252" }}>
-            Scheduled Jobs
-          </p>
-          <p className="text-xs max-w-xs leading-relaxed" style={{ color: "#8a8a8a" }}>
-            Automate your Shopify sync on a daily, hourly, or custom schedule. Coming soon.
-          </p>
+
+          {/* Job cards */}
+          {[
+            {
+              icon: <ShoppingBag size={18} style={{ color: "#d57282" }} />,
+              name: "Shopify Orders",
+              description: "Orders + line items · Latest 250",
+              endpoint: "/api/cron/sync?type=shopify-orders",
+            },
+            {
+              icon: <Package size={18} style={{ color: "#d57282" }} />,
+              name: "Shopify Products",
+              description: "Full catalog · Variants · Stock levels",
+              endpoint: "/api/cron/sync?type=shopify-products",
+            },
+            {
+              icon: <Truck size={18} style={{ color: "#d57282" }} />,
+              name: "Shiprocket",
+              description: "Customer details · AWB · Shipment status",
+              endpoint: "/api/cron/sync?type=shiprocket",
+            },
+          ].map((job) => (
+            <div
+              key={job.name}
+              className="rounded-2xl p-5"
+              style={{
+                backgroundColor: "#ffffff",
+                boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
+                border: "1px solid #E2E2E2",
+              }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#f9e8eb" }}
+                >
+                  {job.icon}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: "#525252" }}>
+                    {job.name}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "#8a8a8a" }}>
+                    {job.description}
+                  </p>
+                </div>
+                <div
+                  className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0"
+                  style={{ backgroundColor: "#f0faf4", color: "#27a559" }}
+                >
+                  <CheckCircle2 size={11} />
+                  Active
+                </div>
+              </div>
+
+              <div
+                className="rounded-xl p-4 space-y-3"
+                style={{ backgroundColor: "#faf7f5", border: "1px solid #f0eae6" }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: "#8a8a8a" }}>
+                    Peak hours
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-xs font-medium px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                    >
+                      Every 2 hours
+                    </span>
+                    <span className="text-xs" style={{ color: "#525252" }}>
+                      9 AM – 7 PM IST
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: "#8a8a8a" }}>
+                    Off-peak hours
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-xs font-medium px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: "#f0eae6", color: "#8a8a8a" }}
+                    >
+                      Every 4 hours
+                    </span>
+                    <span className="text-xs" style={{ color: "#525252" }}>
+                      7 PM – 9 AM IST
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className="pt-3 flex items-center justify-between"
+                  style={{ borderTop: "1px solid #f0eae6" }}
+                >
+                  <span className="text-xs font-medium" style={{ color: "#8a8a8a" }}>
+                    Runs per day
+                  </span>
+                  <span className="text-xs font-semibold" style={{ color: "#525252" }}>
+                    9 times · at :30 past 9, 11 AM · 1, 3, 5, 7 PM · 11 PM · 3, 7 AM IST
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: "#8a8a8a" }}>
+                    Endpoint
+                  </span>
+                  <code
+                    className="text-xs font-mono px-2 py-0.5 rounded"
+                    style={{ backgroundColor: "#ffffff", color: "#525252", border: "1px solid #E2E2E2" }}
+                  >
+                    POST {job.endpoint}
+                  </code>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Setup checklist */}
           <div
-            className="mt-5 flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-full"
-            style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+            className="rounded-2xl p-5"
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
+              border: "1px solid #E2E2E2",
+            }}
           >
-            <CalendarClock size={13} />
-            Coming soon
-            <ChevronRight size={13} />
+            <p className="text-sm font-semibold mb-3" style={{ color: "#525252" }}>
+              Setup Checklist
+            </p>
+            <div className="space-y-2.5">
+              {[
+                {
+                  step: "Add CRON_SECRET to Vercel env vars",
+                  detail: "Any random string — used to authenticate cron requests",
+                },
+                {
+                  step: "Add APP_URL + CRON_SECRET to GitHub repo secrets",
+                  detail: "Repo → Settings → Secrets and variables → Actions",
+                },
+                {
+                  step: "Push .github/workflows/sync.yml to main branch",
+                  detail: "GitHub Actions picks it up automatically",
+                },
+                {
+                  step: "Verify first run",
+                  detail: "Repo → Actions → Scheduled Sync — or trigger manually via workflow_dispatch",
+                },
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-xs font-semibold"
+                    style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                  >
+                    {i + 1}
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium" style={{ color: "#525252" }}>
+                      {item.step}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "#8a8a8a" }}>
+                      {item.detail}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
