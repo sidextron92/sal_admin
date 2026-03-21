@@ -258,6 +258,38 @@ Headers: `Content-Type: text/csv`, `Content-Disposition: attachment; filename="m
 
 ---
 
+### `GET /api/purchase-invoices` · `POST /api/purchase-invoices`
+`app/api/purchase-invoices/route.ts`
+Paginated invoice list (30/page) with inline summary aggregation.
+Query params: `page`, `search` (ilike on `vendor_name` OR `invoice_number`), `vendor` (exact match), `payment_status` (`PAID` | `UNPAID`), `date_from`, `date_to` (filter on `invoice_date`).
+Returns `{ invoices, total, page, pageSize, summary: { total_invoices_amount, total_gst_amount, paid_count, unpaid_count } }`. Summary reflects same filters as list.
+`POST` body: `{ invoice_number, invoice_date, vendor_name, vendor_gst?, total_amount, total_gst?, payment_date?, document_url?, document_path?, notes? }`. Returns 201 `{ success, invoice }`.
+
+---
+
+### `PATCH /api/purchase-invoices/[id]` · `DELETE /api/purchase-invoices/[id]`
+`app/api/purchase-invoices/[id]/route.ts`
+`PATCH` — partial update, all fields optional, sets `updated_at`. Returns `{ success, invoice }`. 404 if not found.
+`DELETE` — fetches `document_path` first, removes file from Supabase Storage (non-fatal on failure), then deletes the row. Returns `{ success }`. 404 if not found.
+
+---
+
+### `GET /api/purchase-invoices/export`
+`app/api/purchase-invoices/export/route.ts`
+Returns CSV of matching invoices (same filter params as list — `search`, `vendor`, `payment_status`, `date_from`, `date_to`), ordered `invoice_date DESC`.
+Columns: `Invoice Number, Invoice Date, Vendor Name, Vendor GST, Total Amount, Total GST, Payment Date, Payment Status, Notes, Created At`.
+Headers: `Content-Type: text/csv`, `Content-Disposition: attachment; filename="maeri_purchase_invoices.csv"`.
+
+---
+
+### `POST /api/purchase-invoices/upload`
+`app/api/purchase-invoices/upload/route.ts`
+Accepts multipart form data with a `file` field. Validates MIME type (PDF/JPEG/PNG/WEBP) and 10 MB size limit.
+Uploads to Supabase Storage bucket `documents` at path `invoices/{timestamp}-{sanitized_name}`.
+Returns `{ success, url, path }` — caller passes both to POST/PATCH as `document_url` + `document_path`.
+
+---
+
 ### `GET /api/pnl`
 `app/api/pnl/route.ts`
 Returns a full D2C P&L snapshot for a date range. See `docs/pnl_claude.md` for full logic.
@@ -358,6 +390,16 @@ One row per inbound webhook event. PK: `id` (bigserial). Columns: `order_id` (nu
 ### `expenses`
 PK: `id` (bigserial). Columns: `function_name` (CHECK: `MARKETING`|`EMPLOYEE`|`LOGISTIC`|`PACKAGING`|`SOFTWARE`|`PAYMENT_GATEWAY`|`MISCELLANEOUS`), `type` (nullable), `particulars`, `expense_date` (date), `base_amount` (numeric 10,2), `tax_amount` (numeric 10,2, default 0), `total_amount` (generated: `base_amount + tax_amount`), `remarks` (nullable), `is_recurring` (bool, default false), `created_at`, `updated_at`. Indexes: `expense_date DESC`, `function_name`.
 
+### `purchase_invoices`
+PK: `id` (bigserial). Columns: `invoice_number` (text, NOT NULL), `invoice_date` (date, NOT NULL), `vendor_name` (text, NOT NULL), `vendor_gst` (nullable), `total_amount` (numeric 12,2, ≥ 0), `total_gst` (numeric 12,2, default 0, ≥ 0), `payment_date` (date, nullable), `payment_status` (generated: `'PAID'` if `payment_date IS NOT NULL` else `'UNPAID'`), `document_url` (nullable), `document_path` (nullable — Supabase Storage path for deletion), `notes` (nullable), `created_at`, `updated_at`. Indexes: `invoice_date DESC`, `vendor_name`, `payment_status`.
+
+**`payment_status` is a GENERATED ALWAYS AS STORED column** — never include it in INSERT or UPDATE statements.
+
+### Supabase Storage — `documents` bucket
+Public bucket. Max file size 50 MB. Allowed types: PDF, JPEG, PNG, WEBP.
+Invoice PDFs stored at path `invoices/{timestamp}-{sanitized_filename}`.
+`supabaseAdmin` (service role) bypasses RLS — no explicit storage policies needed for server-side uploads.
+
 ---
 
 ## DB Trigger: `trg_inventory_change`
@@ -387,6 +429,7 @@ Both modes write to `inventory_logs`.
 | `/dashboard/inventory` | `app/dashboard/inventory/page.tsx` | Built — live data |
 | `/dashboard/settings` | `app/dashboard/settings/page.tsx` | Built |
 | `/dashboard/expenses` | `app/dashboard/expenses/page.tsx` | Built — live data |
+| `/dashboard/purchase-invoices` | `app/dashboard/purchase-invoices/page.tsx` | Built — live data |
 | `/dashboard/shipping` | — | Planned (Phase 3) |
 | `/dashboard/ads` | — | Planned (Phase 5) |
 | `/dashboard/reconciliation` | — | Planned (Phase 5) |
@@ -415,6 +458,14 @@ Both modes write to `inventory_logs`.
 - **Add/Edit modal** — 9 fields: Function, Type, Particulars, Date, Base Amount, Tax Amount (live Total), Remarks, Recurring toggle.
 - **CSV Export** — triggers `GET /api/expenses/export`, downloads full dataset regardless of active filters.
 
+**Purchase Invoices page (`app/dashboard/purchase-invoices/page.tsx`):**
+- **Summary cards** — Total Invoice Value, Total GST, Paid/Unpaid counts. All reflect active filters.
+- **Filter bar** — debounced keyword search (vendor_name/invoice_number), Payment Status dropdown (All/PAID/UNPAID), Date From/To. Default: last 90 days. Reset button when filters differ from default.
+- **Invoice table** — Invoice No., Date, Vendor, GST No., Amount, GST, Payment Date, Status badge (green=PAID, amber=UNPAID), Document link (ExternalLink opens PDF in new tab), inline delete confirmation.
+- **Add/Edit modal** — 9 fields: Invoice Number, Invoice Date, Vendor Name, Vendor GST, Total Amount, Total GST, Payment Date (blank = Unpaid), Notes, Document upload. Live "Total Payable" row.
+- **Document upload** — dashed upload area, calls `POST /api/purchase-invoices/upload`, shows filename on success with Remove option.
+- **CSV Export** — triggers `GET /api/purchase-invoices/export` with active filters applied.
+
 ---
 
 ## Roadmap
@@ -425,6 +476,7 @@ Both modes write to `inventory_logs`.
 - [x] Phase 2.5: Inventory — cost tracking, virtual/physical split, bulk Excel, Shopify write-back
 - [x] Phase 3: Shiprocket shipping updates — webhook ingestion, status mapping, tracking timeline UI
 - [x] Phase 3.5: Expenses module — full CRUD, filters, summary cards, CSV export
+- [x] Phase 3.6: Purchase Invoices module — full CRUD, PDF upload to Supabase Storage, filters, CSV export
 - [ ] Phase 4: Voice AI triggers
 - [ ] Phase 5: Meta Ads dashboard, Reconciliation
 - [ ] Shopify sync: full historical order pagination
