@@ -52,24 +52,32 @@ interface MetricsResponse {
     repeat_customers: number;
     repeat_rate: number;
   };
+  aov_asp: {
+    aov: number;
+    asp: number;
+    prev_aov: number;
+    prev_asp: number;
+  };
   chart: { day: string; order_count: number; gmv: number }[];
 }
 
 async function fetchMetrics(): Promise<MetricsResponse | null> {
   try {
-    const [s, r, o, rr, c] = await Promise.all([
+    const [s, r, o, rr, aa, c] = await Promise.all([
       supabaseAdmin.rpc("overview_mtd_sales"),
       supabaseAdmin.rpc("overview_mtd_revenue"),
       supabaseAdmin.rpc("overview_mtd_organic"),
       supabaseAdmin.rpc("overview_mtd_repeat_rate"),
+      supabaseAdmin.rpc("overview_mtd_aov_asp"),
       supabaseAdmin.rpc("overview_last7days_chart"),
     ]);
-    if (s.error || r.error || o.error || rr.error || c.error) return null;
+    if (s.error || r.error || o.error || rr.error || aa.error || c.error) return null;
     return {
       sales: s.data,
       revenue: r.data,
       organic: o.data,
       repeat_rate: rr.data,
+      aov_asp: aa.data,
       chart: c.data ?? [],
     };
   } catch {
@@ -106,6 +114,12 @@ export default async function OverviewPage() {
   const repeatRate = metrics?.repeat_rate.repeat_rate ?? 0;
   const repeatCustomers = metrics?.repeat_rate.repeat_customers ?? 0;
   const totalCustomers = metrics?.repeat_rate.total_customers ?? 0;
+
+  // Card AOV / ASP
+  const aov = metrics?.aov_asp.aov ?? 0;
+  const asp = metrics?.aov_asp.asp ?? 0;
+  const aovChange = pctChange(aov, metrics?.aov_asp.prev_aov ?? 0);
+  const aspChange = pctChange(asp, metrics?.aov_asp.prev_asp ?? 0);
 
   const chartData = metrics?.chart ?? [];
 
@@ -220,9 +234,40 @@ export default async function OverviewPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          {/* AOV — live */}
+          <div>
+            <p className="text-[0.7rem] font-medium tracking-wide uppercase" style={{ color: "#b0a0a0" }}>
+              Avg Order Value
+            </p>
+            <p className="text-xl font-semibold mt-1" style={{ color: "#525252" }}>
+              {formatINR(aov)}
+            </p>
+            <p
+              className="text-[0.68rem] mt-0.5"
+              style={{ color: aovChange.trend === "up" ? "#16a34a" : aovChange.trend === "down" ? "#dc2626" : "#8a8a8a" }}
+            >
+              {aovChange.label}
+            </p>
+          </div>
+
+          {/* ASP — live */}
+          <div>
+            <p className="text-[0.7rem] font-medium tracking-wide uppercase" style={{ color: "#b0a0a0" }}>
+              Avg Selling Price
+            </p>
+            <p className="text-xl font-semibold mt-1" style={{ color: "#525252" }}>
+              {formatINR(asp)}
+            </p>
+            <p
+              className="text-[0.68rem] mt-0.5"
+              style={{ color: aspChange.trend === "up" ? "#16a34a" : aspChange.trend === "down" ? "#dc2626" : "#8a8a8a" }}
+            >
+              {aspChange.label}
+            </p>
+          </div>
+
+          {/* Static placeholders */}
           {[
-            { label: "Shopify Orders", value: "—", note: "sync to update" },
-            { label: "Amazon Orders", value: "—", note: "coming soon" },
             { label: "NDR Cases", value: "—", note: "coming soon" },
             { label: "Low Stock SKUs", value: "—", note: "check inventory" },
           ].map((item) => (
@@ -235,10 +280,7 @@ export default async function OverviewPage() {
               </p>
               <p className="text-xl font-semibold mt-1" style={{ color: "#525252" }}>
                 {item.value}
-                <span
-                  className="text-xs font-normal ml-1"
-                  style={{ color: "#8a8a8a" }}
-                >
+                <span className="text-xs font-normal ml-1" style={{ color: "#8a8a8a" }}>
                   {item.note}
                 </span>
               </p>
