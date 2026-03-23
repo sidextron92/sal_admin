@@ -54,6 +54,7 @@ const ORDERS_QUERY = `
                 originalUnitPriceSet { shopMoney { amount currencyCode } }
                 discountedUnitPriceSet { shopMoney { amount currencyCode } }
                 totalDiscountSet { shopMoney { amount currencyCode } }
+                discountAllocations { allocatedAmountSet { shopMoney { amount } } }
                 product { id title handle vendor productType }
                 variant { id title sku }
               }
@@ -462,7 +463,16 @@ function parseOrders(data: Record<string, unknown>): FetchOrdersResult {
     for (const itemEdge of o.lineItems.edges) {
       const i = itemEdge.node
       const originalPrice = parseFloat(i.originalUnitPriceSet.shopMoney.amount)
-      const discountedPrice = parseFloat(i.discountedUnitPriceSet.shopMoney.amount)
+
+      // discountAllocations is the source of truth for all discount types.
+      // totalDiscountSet misses order-level discount codes; discountedUnitPriceSet
+      // also misses them. discountAllocations captures both product-level and
+      // order-level code discounts, already proportionally allocated per line item.
+      const allocatedDiscount = (i.discountAllocations as any[])
+        .reduce((sum: number, da: any) => sum + parseFloat(da.allocatedAmountSet.shopMoney.amount), 0)
+      const discountedPrice = allocatedDiscount > 0
+        ? originalPrice - allocatedDiscount / i.quantity
+        : parseFloat(i.discountedUnitPriceSet.shopMoney.amount)
 
       lineItems.push({
         line_item_id: i.id.split('/').pop(),
@@ -471,7 +481,7 @@ function parseOrders(data: Record<string, unknown>): FetchOrdersResult {
         quantity: i.quantity,
         original_unit_price: originalPrice,
         discounted_unit_price: discountedPrice,
-        total_discount: parseFloat(i.totalDiscountSet.shopMoney.amount),
+        total_discount: allocatedDiscount,
         currency: i.originalUnitPriceSet.shopMoney.currencyCode,
         line_total: originalPrice * i.quantity,
         line_total_discounted: discountedPrice * i.quantity,
