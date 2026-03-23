@@ -17,6 +17,8 @@ import {
   CheckCircle2,
   XCircle,
   SkipForward,
+  MoreHorizontal,
+  ClipboardList,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -419,9 +421,10 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
                   <input
                     type="number"
                     min={0}
-                    value={newVirtual}
+                    value={newVirtual === 0 ? "" : newVirtual}
+                    placeholder="0"
                     onChange={(e) => setNewVirtual(clampInt(parseInt(e.target.value, 10) || 0))}
-                    className="flex-1 text-center text-sm font-semibold outline-none bg-transparent py-2"
+                    className="flex-1 min-w-0 text-center text-sm font-semibold outline-none bg-transparent py-2"
                     style={{ color: "#525252" }}
                   />
                   <button
@@ -444,9 +447,10 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
                   <input
                     type="number"
                     min={0}
-                    value={newPhysical}
+                    value={newPhysical === 0 ? "" : newPhysical}
+                    placeholder="0"
                     onChange={(e) => setNewPhysical(clampInt(parseInt(e.target.value, 10) || 0))}
-                    className="flex-1 text-center text-sm font-semibold outline-none bg-transparent py-2"
+                    className="flex-1 min-w-0 text-center text-sm font-semibold outline-none bg-transparent py-2"
                     style={{ color: "#525252" }}
                   />
                   <button
@@ -575,12 +579,237 @@ function CostCell({ variantId, initialCost, onSaved }: { variantId: string; init
   );
 }
 
+// ── Inventory Log Modal ─────────────────────────────────────────────────────
+
+interface InventoryLog {
+  changed_at: string;
+  changed_by: string;
+  delta_virtual: number;
+  delta_physical: number;
+  delta_total: number;
+  new_total: number;
+  remarks: string | null;
+}
+
+function InventoryLogModal({
+  variant,
+  onClose,
+}: {
+  variant: VariantRow;
+  onClose: () => void;
+}) {
+  const [logs, setLogs]       = useState<InventoryLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState("");
+
+  useEffect(() => {
+    fetch(`/api/inventory/${variant.variant_id}/logs`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) throw new Error(d.error);
+        setLogs(d.logs ?? []);
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [variant.variant_id]);
+
+  const productTitle = variant.products.title;
+  const variantLabel = variant.title !== "Default Title" ? variant.title : null;
+
+  function formatTs(ts: string) {
+    return new Date(ts).toLocaleString("en-IN", {
+      day: "2-digit", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit", hour12: true,
+    });
+  }
+
+  function changedByLabel(cb: string) {
+    if (cb === "admin") return "Admin";
+    if (cb === "shopify_sync") return "Shopify Sync";
+    if (cb === "bulk_upload") return "Bulk Upload";
+    if (cb === "order") return "Order";
+    return cb;
+  }
+
+  function deltaCell(val: number) {
+    const color = val > 0 ? "#27a559" : val < 0 ? "#e05252" : "#8a8a8a";
+    const sign  = val > 0 ? "+" : "";
+    return <span style={{ color, fontWeight: 500 }}>{sign}{val}</span>;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="w-full max-w-3xl rounded-2xl overflow-hidden flex flex-col"
+        style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.18)", maxHeight: "85vh" }}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between px-6 pt-5 pb-4 shrink-0" style={{ borderBottom: "1px solid #f0eae6" }}>
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl" style={{ backgroundColor: "#f9e8eb" }}>
+              <ClipboardList size={14} style={{ color: "#d57282" }} />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>Inventory Log</h3>
+              <p className="text-xs mt-0.5" style={{ color: "#8a8a8a" }}>
+                {productTitle}
+                {variantLabel && <> · <span style={{ color: "#d57282" }}>{variantLabel}</span></>}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#f5f0ed]">
+            <X size={16} style={{ color: "#8a8a8a" }} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="overflow-auto flex-1">
+          {loading && (
+            <div className="py-12 flex flex-col items-center gap-3" style={{ color: "#8a8a8a" }}>
+              <div className="w-7 h-7 rounded-full border-2 animate-spin" style={{ borderColor: "#d57282", borderTopColor: "transparent" }} />
+              <p className="text-sm">Loading log…</p>
+            </div>
+          )}
+
+          {!loading && error && (
+            <p className="text-sm py-8 text-center" style={{ color: "#e05252" }}>{error}</p>
+          )}
+
+          {!loading && !error && logs.length === 0 && (
+            <div className="py-12 flex flex-col items-center gap-2" style={{ color: "#8a8a8a" }}>
+              <ClipboardList size={28} style={{ opacity: 0.3 }} />
+              <p className="text-sm">No changes recorded yet</p>
+            </div>
+          )}
+
+          {!loading && !error && logs.length > 0 && (
+            <table className="w-full text-xs" style={{ borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ backgroundColor: "#faf7f5", borderBottom: "1px solid #f0eae6" }}>
+                  {["Timestamp", "Changed By", "Δ Virtual", "Δ Physical", "Δ Total", "New Total", "Remarks"].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-4 py-3 font-semibold uppercase tracking-wide whitespace-nowrap"
+                      style={{ color: "#8a8a8a", fontSize: "11px" }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((log, i) => (
+                  <tr
+                    key={i}
+                    className="hover:bg-[#fffbf6] transition-colors"
+                    style={{ borderBottom: "1px solid #f0eae6" }}
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap" style={{ color: "#525252" }}>
+                      {formatTs(log.changed_at)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "#f0f0f0", color: "#525252" }}>
+                        {changedByLabel(log.changed_by)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">{deltaCell(log.delta_virtual)}</td>
+                    <td className="px-4 py-3 text-center">{deltaCell(log.delta_physical)}</td>
+                    <td className="px-4 py-3 text-center">{deltaCell(log.delta_total)}</td>
+                    <td className="px-4 py-3 text-center font-semibold" style={{ color: "#d57282" }}>{log.new_total}</td>
+                    <td className="px-4 py-3 max-w-[180px]" style={{ color: "#8a8a8a" }}>
+                      {log.remarks ? <span className="italic">{log.remarks}</span> : <span style={{ color: "#d0d0d0" }}>—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 shrink-0" style={{ borderTop: "1px solid #f0eae6" }}>
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold"
+            style={{ backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Row more menu ───────────────────────────────────────────────────────────
+
+function RowMoreMenu({
+  onUpdateInventory,
+  onViewLog,
+}: {
+  onUpdateInventory: () => void;
+  onViewLog: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref             = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="p-1.5 rounded-lg hover:bg-[#f9e8eb] transition-colors"
+        title="More options"
+      >
+        <MoreHorizontal size={13} style={{ color: "#d57282" }} />
+      </button>
+
+      {open && (
+        <div
+          className="absolute right-0 mt-1 z-30 rounded-xl overflow-hidden w-44"
+          style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2", boxShadow: "0 4px 20px rgba(0,0,0,0.10)" }}
+        >
+          <button
+            onClick={() => { setOpen(false); onUpdateInventory(); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[#faf7f5] transition-colors"
+            style={{ color: "#525252" }}
+          >
+            <Boxes size={13} style={{ color: "#d57282" }} />
+            Update Inventory
+          </button>
+          <div style={{ borderTop: "1px solid #f0eae6" }} />
+          <button
+            onClick={() => { setOpen(false); onViewLog(); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[#faf7f5] transition-colors"
+            style={{ color: "#525252" }}
+          >
+            <ClipboardList size={13} style={{ color: "#d57282" }} />
+            View Inventory Log
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Table row ──────────────────────────────────────────────────────────────
 
 const COL = "40px 1fr 110px 110px 110px 110px 36px";
 
 function VariantTableRow({ variant, onRefresh }: { variant: VariantRow; onRefresh: () => void }) {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [logOpen, setLogOpen]             = useState(false);
   const p = variant.products;
 
   return (
@@ -603,6 +832,9 @@ function VariantTableRow({ variant, onRefresh }: { variant: VariantRow; onRefres
         {/* Product + variant name */}
         <div className="min-w-0 px-3">
           <p className="text-sm font-medium truncate" style={{ color: "#525252" }}>{p.title}</p>
+          {p.product_type && (
+            <p className="text-xs truncate" style={{ color: "#b0b0b0" }}>{p.product_type}</p>
+          )}
           {variant.title !== "Default Title" && (
             <p className="text-xs truncate" style={{ color: "#8a8a8a" }}>{variant.title}</p>
           )}
@@ -633,23 +865,27 @@ function VariantTableRow({ variant, onRefresh }: { variant: VariantRow; onRefres
           </span>
         </div>
 
-        {/* Edit inventory */}
+        {/* More menu */}
         <div className="flex justify-center">
-          <button
-            onClick={() => setModalOpen(true)}
-            className="p-1.5 rounded-lg hover:bg-[#f9e8eb] transition-colors"
-            title="Update inventory"
-          >
-            <Boxes size={13} style={{ color: "#d57282" }} />
-          </button>
+          <RowMoreMenu
+            onUpdateInventory={() => setInventoryOpen(true)}
+            onViewLog={() => setLogOpen(true)}
+          />
         </div>
       </div>
 
-      {modalOpen && (
+      {inventoryOpen && (
         <InventoryModal
           variant={variant}
-          onClose={() => setModalOpen(false)}
+          onClose={() => setInventoryOpen(false)}
           onSaved={onRefresh}
+        />
+      )}
+
+      {logOpen && (
+        <InventoryLogModal
+          variant={variant}
+          onClose={() => setLogOpen(false)}
         />
       )}
     </>

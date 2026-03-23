@@ -65,15 +65,16 @@ export async function POST(
   // 4. Extract fields (Shiprocket extractor — extend per-partner as needed)
   const { awb_no, partner_status, event_timestamp } = extractShiprocket(body)
 
-  // 5. Look up system_status mapping
+  // 5. Look up system_status mapping (case-insensitive — Shiprocket sends UPPERCASE
+  //    but mapper may have Title Case entries e.g. "In Transit" vs "IN TRANSIT")
   let system_status: string | null = null
   if (partner_status) {
     const { data: mapping } = await supabaseAdmin
       .from('status_mapper')
       .select('system_status')
       .eq('shipping_partner_id', partnerIdNum)
-      .eq('partner_status', partner_status)
-      .single()
+      .ilike('partner_status', partner_status)
+      .maybeSingle()
     system_status = mapping?.system_status ?? null
   }
 

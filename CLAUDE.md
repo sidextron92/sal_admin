@@ -68,6 +68,22 @@ Fetches all active Shopify products + variants → upserts `products` + `product
 
 ---
 
+### `POST /api/cron/sync`
+`app/api/cron/sync/route.ts`
+Protected dispatcher for scheduled sync jobs. Called by GitHub Actions on cron schedule.
+Auth: `x-cron-secret` header must match `CRON_SECRET` env var — returns 401 otherwise.
+Query param: `type` (`shopify-orders` | `shopify-products` | `shiprocket`). Derives origin from incoming request URL and delegates to the corresponding sync route internally.
+Returns the sync result from the delegated route plus the `type` field.
+
+**Scheduled via:** `.github/workflows/sync.yml` — GitHub Actions cron, runs 9x/day.
+**Schedule (IST):** Every 2h during peak (9 AM–7 PM): 9, 11 AM, 1, 3, 5, 7 PM · Every 4h off-peak (7 PM–9 AM): 11 PM, 3 AM, 7 AM.
+**Cron expression (UTC):** `30 1,3,5,7,9,11,13,17,21 * * *`
+**Job order (sequential via `needs:`):** Shopify Products → Shopify Orders → Shiprocket.
+**GitHub secrets required:** `APP_URL` (production URL, no trailing slash), `CRON_SECRET`.
+**Vercel env required:** `CRON_SECRET` (same value as GitHub secret).
+
+---
+
 ### `GET /api/orders`
 `app/api/orders/route.ts`
 Paginated orders (30/page) with search + filtering. Joins `order_line_items`.
@@ -298,6 +314,16 @@ Returns `{ revenue, expenses, rto, trend, meta }`. All margin computations done 
 
 ---
 
+### `GET /api/analytics`
+`app/api/analytics/route.ts`
+Returns order analytics for a date range. See `docs/analytics_claude.md` for full RPC and page logic.
+Query params: `date_from`/`date_to` (YYYY-MM-DD). Default: last 30 days.
+Calls 7 RPCs in parallel. Returns `{ summary: { current, prev }, locations: { by_city, by_state }, variants: { all, organic, inorganic }, channel_split, meta }`.
+All three variant sets (all/organic/inorganic) are pre-fetched — UI toggles are instant.
+**Organic/inorganic split:** uses `NULLIF(TRIM(last_utm_campaign), '') IS NULL/NOT NULL` — Shopify sync stores `''` (not `NULL`) when no UTM is present; plain `IS NULL` check would mark all orders as organic.
+
+---
+
 ## Library Modules
 
 ### `lib/shopify.ts`
@@ -430,7 +456,7 @@ Both modes write to `inventory_logs`.
 | `/dashboard/settings` | `app/dashboard/settings/page.tsx` | Built |
 | `/dashboard/expenses` | `app/dashboard/expenses/page.tsx` | Built — live data |
 | `/dashboard/purchase-invoices` | `app/dashboard/purchase-invoices/page.tsx` | Built — live data |
-| `/dashboard/shipping` | — | Planned (Phase 3) |
+| `/dashboard/analytics` | `app/dashboard/analytics/page.tsx` | Built — live data |
 | `/dashboard/ads` | — | Planned (Phase 5) |
 | `/dashboard/reconciliation` | — | Planned (Phase 5) |
 
@@ -466,6 +492,15 @@ Both modes write to `inventory_logs`.
 - **Document upload** — dashed upload area, calls `POST /api/purchase-invoices/upload`, shows filename on success with Remove option.
 - **CSV Export** — triggers `GET /api/purchase-invoices/export` with active filters applied.
 
+**Analytics page (`app/dashboard/analytics/page.tsx`):**
+- No KPI cards — charts only. Default period: last 30 days vs previous 30 days.
+- **Top 10 Locations** — horizontal bar, City/State toggle (instant, no re-fetch).
+- **Top 10 Variants** — horizontal bar, By Units/By GMV sort + All/Organic/Inorganic source toggle (all instant).
+- **Channel Split** — donut (Shopify/Amazon/Offline).
+- **RTO Rate** — large % + delta badge (inverted colors: red = worse, green = improved).
+- **COD vs Prepaid** — donut with legend.
+- See `docs/analytics_claude.md` for full RPC definitions and chart logic.
+
 ---
 
 ## Roadmap
@@ -477,7 +512,8 @@ Both modes write to `inventory_logs`.
 - [x] Phase 3: Shiprocket shipping updates — webhook ingestion, status mapping, tracking timeline UI
 - [x] Phase 3.5: Expenses module — full CRUD, filters, summary cards, CSV export
 - [x] Phase 3.6: Purchase Invoices module — full CRUD, PDF upload to Supabase Storage, filters, CSV export
+- [x] Phase 3.7: Analytics module — top locations, top variants, RTO rate, COD/Prepaid split, channel split
 - [ ] Phase 4: Voice AI triggers
 - [ ] Phase 5: Meta Ads dashboard, Reconciliation
 - [ ] Shopify sync: full historical order pagination
-- [ ] Scheduled sync (cron)
+- [x] Scheduled sync — GitHub Actions cron, 9x/day, sequential (Products → Orders → Shiprocket)
