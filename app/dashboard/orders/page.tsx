@@ -927,6 +927,8 @@ function AddCustomOrderModal({
         return `Item ${i + 1}: quantity must be at least 1`;
       if (lineItems[i].quantity > lineItems[i].available_qty)
         return `"${lineItems[i].product_title}" — only ${lineItems[i].available_qty} in stock`;
+      if (isNaN(lineItems[i].discount_percent) || !isFinite(lineItems[i].discount_percent))
+        return `Item ${i + 1}: discount must be a numeric value`;
       if (
         lineItems[i].discount_percent < 0 ||
         lineItems[i].discount_percent > 100
@@ -1489,15 +1491,18 @@ function AddCustomOrderModal({
                             Disc %
                           </label>
                           <input
-                            type="text"
-                            inputMode="numeric"
+                            type="number"
+                            min={0}
+                            max={100}
+                            step={0.01}
                             value={item.discount_percent === 0 ? "" : item.discount_percent}
                             placeholder="0"
-                            maxLength={4}
+                            onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) e.preventDefault();
+                            }}
                             onChange={(e) => {
-                              const raw = e.target.value.replace(/\D/g, "").slice(0, 4);
-                              const val = Math.min(100, Math.max(0, parseInt(raw) || 0));
-                              updateItem(idx, { discount_percent: val });
+                              const val = parseFloat(e.target.value);
+                              updateItem(idx, { discount_percent: isNaN(val) ? 0 : Math.min(100, Math.max(0, val)) });
                             }}
                             onFocus={(e) => e.target.select()}
                             className="w-full text-xs text-center rounded-lg px-2 py-1.5 outline-none"
