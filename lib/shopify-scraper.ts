@@ -133,9 +133,9 @@ export function extractRows(
     const productUrl = `${baseUrl}/products/${product.handle ?? ""}`;
     const productType = String(product.product_type ?? "").trim();
 
-    let tags = product.tags ?? "";
-    if (Array.isArray(tags)) tags = (tags as string[]).join(", ");
-    tags = String(tags).trim();
+    let tagsRaw = product.tags ?? "";
+    if (Array.isArray(tagsRaw)) tagsRaw = (tagsRaw as string[]).join(", ");
+    const tags: string = String(tagsRaw).trim();
 
     const images = (product.images as Record<string, unknown>[]) ?? [];
     const allImageUrls = images
