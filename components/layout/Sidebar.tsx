@@ -19,6 +19,8 @@ import {
   ChevronDown,
   X,
   RefreshCw,
+  Wrench,
+  GitCompare,
 } from "lucide-react";
 import {
   Tooltip,
@@ -52,6 +54,15 @@ const NAV_ITEMS: NavItem[] = [
   { label: "P&L", href: "/dashboard/pnl", icon: LineChart, built: true },
   { label: "Ads", href: "/dashboard/ads", icon: BarChart2, built: false },
   { label: "Reconciliation", href: "/dashboard/reconciliation", icon: FileText, built: false },
+  {
+    label: "Tools",
+    icon: Wrench,
+    built: true,
+    children: [
+      { label: "Competition Brands", href: "/dashboard/tools/product-comparison", icon: GitCompare, built: true },
+      { label: "Competition Products", href: "/dashboard/tools/competition-products", icon: BarChart2, built: true },
+    ],
+  },
   {
     label: "Settings",
     icon: Settings,
