@@ -6,8 +6,8 @@
 |---|---|
 | `app/api/pnl/route.ts` | API route — fetches RPCs + expenses, computes all margins |
 | `app/dashboard/pnl/page.tsx` | Page — filter bar, KPI cards, waterfall table, trend chart |
-| `supabase/migrations/006_create_get_pnl_data.sql` | `get_pnl_data` RPC |
-| DB migration `extend_pnl_trend_with_month_start` | Extended `get_pnl_monthly_trend` to return `month_start date` |
+| `supabase/migrations/006_create_get_pnl_data.sql` | Original `get_pnl_data` + `get_pnl_monthly_trend` RPCs |
+| `supabase/migrations/007_fix_pnl_rpc_multiline_inflation.sql` | Fixed both RPCs — splits order-level and line-item aggregates into separate queries to prevent multi-line-item inflation |
 
 ---
 
@@ -15,8 +15,8 @@
 
 | Data | Source |
 |---|---|
-| Revenue + order count | `orders` + `order_line_items` |
-| COGS | `product_variants.cost × oli.quantity` (current snapshot, not historical) |
+| Gross Revenue + Discounts + COGS | `order_line_items` JOIN `orders` (line-item granularity) |
+| Net Revenue + Shipping Revenue + Order Count | `orders` only — no JOIN, avoids multi-line-item inflation |
 | Operating expenses | `expenses` table (global — not channel-filtered) |
 
 ---
@@ -28,7 +28,7 @@ Gross Revenue         SUM(oli.line_total)                          [original_uni
   − Discounts         SUM(oli.line_total − oli.line_total_discounted)
   + Shipping Revenue  SUM(o.total_price − o.subtotal_price)
 ─────────────────────────────────────────────────────────────
-Net Revenue           SUM(o.total_price)                           [exact identity, not approximation]
+Net Revenue           SUM(o.total_price)                           [queried from orders directly, not derived from line items]
   − COGS              SUM(pv.cost × oli.quantity)  LEFT JOIN variant
 ─────────────────────────────────────────────────────────────
 Gross Profit (CM1)    / Gross Margin %
@@ -56,10 +56,21 @@ RTO (orders with `sr_status IN ('RTO INITIATED', 'RTO DELIVERED')`) is shown for
 ## Supabase RPCs
 
 ### `get_pnl_data(p_date_from, p_date_to, p_channel)`
-Single-period snapshot. Filters: `cancelled_at IS NULL`, `DATE(created_at)` in range, optional `sales_channel` match. COGS uses `LEFT JOIN product_variants` so deleted variants contribute 0 COGS but don't drop revenue. Returns one row.
+Single-period snapshot. Filters: `cancelled_at IS NULL`, `DATE(created_at)` in range, optional `sales_channel` match.
+
+Uses **two separate queries** to avoid inflating order-level values through a line-items JOIN:
+1. `orders JOIN order_line_items LEFT JOIN product_variants` → `gross_revenue`, `total_discounts`, `cogs` (all line-item level — safe to sum per row)
+2. `FROM orders` only → `net_revenue`, `shipping_revenue`, `order_count` (order-level — summing through a JOIN would count N times for N line items)
+
+COGS uses `LEFT JOIN product_variants` so deleted variants contribute 0 COGS but don't drop revenue. Returns one row.
 
 ### `get_pnl_monthly_trend(p_months_back, p_channel)`
-Monthly buckets. Always covers last `p_months_back + 1` months (called with 11 → last 12 months including current). Groups by `DATE_TRUNC('month', created_at)`. Returns `month_start` (date), `month_label`, `net_revenue`, `cogs`, `gross_profit` per month.
+Monthly buckets. Always covers last `p_months_back + 1` months (called with 11 → last 12 months including current). Returns `month_start` (date), `month_label`, `net_revenue`, `cogs`, `gross_profit` per month.
+
+Uses a **CTE** to separate order-level and line-item aggregates:
+- `order_totals` CTE — `FROM orders` grouped by month → `net_revenue` (no JOIN, no inflation)
+- `cogs_by_month` CTE — `orders JOIN order_line_items LEFT JOIN product_variants` grouped by month → `cogs`
+- Final SELECT joins both CTEs on `month_start`, computes `gross_profit = net_revenue - cogs`
 
 `month_start` is used server-side to join with monthly expenses — it is not sent to the client.
 
