@@ -42,30 +42,14 @@ export async function GET(req: NextRequest) {
   const { data, error, count } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // ── Filter options (distinct values for dropdowns) ──────────────────────────
+  // ── Filter options (distinct values via RPCs) ───────────────────────────────
   const [brandsRes, typesRes] = await Promise.all([
-    supabaseAdmin
-      .from("competition_products")
-      .select("company_name")
-      .order("company_name"),
-    supabaseAdmin
-      .from("competition_products")
-      .select("product_type")
-      .not("product_type", "is", null)
-      .neq("product_type", "")
-      .order("product_type"),
+    supabaseAdmin.rpc("get_competition_company_names"),
+    supabaseAdmin.rpc("get_competition_product_types", { p_company_name: company || null }),
   ]);
 
-  const companyNames = [
-    ...new Set((brandsRes.data ?? []).map((r) => r.company_name as string)),
-  ];
-  const productTypes = [
-    ...new Set(
-      (typesRes.data ?? [])
-        .map((r) => r.product_type as string)
-        .filter(Boolean)
-    ),
-  ];
+  const companyNames = (brandsRes.data ?? []).map((r: { company_name: string }) => r.company_name);
+  const productTypes = (typesRes.data ?? []).map((r: { product_type: string }) => r.product_type);
 
   return NextResponse.json({
     products: data ?? [],

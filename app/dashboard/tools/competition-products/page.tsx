@@ -10,6 +10,7 @@ import {
   Loader2,
   X,
   ChevronDown,
+  Info,
 } from "lucide-react";
 import {
   Tooltip,
@@ -73,6 +74,15 @@ interface CompetitionProduct {
 interface FilterOptions {
   company_names: string[];
   product_types: string[];
+}
+
+interface AnalysisRow {
+  company_name: string;
+  product_type: string;
+  variants: number;
+  median_price: number;
+  max_price: number;
+  min_price: number;
 }
 
 // ── Defaults ──────────────────────────────────────────────────────────────────
@@ -197,6 +207,310 @@ function TagPills({ tags, tcTags }: { tags: string; tcTags?: string[] }) {
   );
 }
 
+// ── Analysis Modal ───────────────────────────────────────────────────────────
+
+function MultiSelect({
+  selected,
+  onChange,
+  options,
+  placeholder,
+}: {
+  selected: Set<string>;
+  onChange: (next: Set<string>) => void;
+  options: string[];
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setQuery(""); }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
+  const toggle = (val: string) => {
+    const next = new Set(selected);
+    if (next.has(val)) next.delete(val); else next.add(val);
+    onChange(next);
+  };
+
+  const filtered = query
+    ? options
+        .map((o) => {
+          const lower = o.toLowerCase();
+          const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+          // Each query word must fuzzy-match somewhere in the option
+          let score = 0;
+          for (const w of words) {
+            if (lower.includes(w)) { /* exact substring — best */ }
+            else {
+              // Fuzzy: every char in the word must appear in order
+              let oi = 0;
+              let matched = true;
+              for (let ci = 0; ci < w.length; ci++) {
+                oi = lower.indexOf(w[ci], oi);
+                if (oi === -1) { matched = false; break; }
+                oi++;
+              }
+              if (!matched) return null;
+              score++;
+            }
+          }
+          return { option: o, score };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a!.score - b!.score)
+        .map((r) => r!.option)
+    : options;
+
+  const label = selected.size === 0
+    ? placeholder
+    : selected.size === 1
+      ? [...selected][0]
+      : `${selected.size} selected`;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="appearance-none w-full text-sm rounded-xl pl-3 pr-8 py-2 outline-none text-left"
+        style={{
+          border: "1px solid #E2E2E2",
+          color: selected.size ? "#525252" : "#b0a8a8",
+          backgroundColor: "#ffffff",
+        }}
+      >
+        {label}
+      </button>
+      <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#b0a8a8" }} />
+      {open && (
+        <div
+          className="absolute z-10 mt-1 w-64 rounded-xl overflow-hidden"
+          style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}
+        >
+          <div className="px-2 pt-2 pb-1" style={{ borderBottom: "1px solid #f0eae6" }}>
+            <div className="relative">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#b0a8a8" }} />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search categories…"
+                className="w-full text-xs rounded-lg pl-7 pr-2 py-1.5 outline-none placeholder:text-[#c0b8b8]"
+                style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#faf7f5" }}
+              />
+            </div>
+          </div>
+          <div className="max-h-52 overflow-auto py-1">
+          {filtered.length > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1" style={{ borderBottom: "1px solid #f0eae6" }}>
+              {(() => {
+                const allSelected = filtered.every((o) => selected.has(o));
+                return (
+                  <button
+                    onClick={() => {
+                      const next = new Set(selected);
+                      if (allSelected) filtered.forEach((o) => next.delete(o));
+                      else filtered.forEach((o) => next.add(o));
+                      onChange(next);
+                    }}
+                    className="text-xs font-medium hover:underline"
+                    style={{ color: "#d57282" }}
+                  >
+                    {allSelected ? "Deselect all" : "Select all"}{query ? " matches" : ""}
+                  </button>
+                );
+              })()}
+              {selected.size > 0 && (
+                <button
+                  onClick={() => { onChange(new Set()); setQuery(""); }}
+                  className="text-xs font-medium hover:underline ml-auto"
+                  style={{ color: "#8a8a8a" }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          )}
+          {filtered.length === 0 ? (
+            <p className="px-3 py-2 text-xs" style={{ color: "#b0a8a8" }}>No matches</p>
+          ) : filtered.map((o) => (
+            <label
+              key={o}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-[#f5f0ed]"
+              style={{ color: "#525252" }}
+            >
+              <input
+                type="checkbox"
+                checked={selected.has(o)}
+                onChange={() => toggle(o)}
+                className="accent-[#d57282] rounded"
+              />
+              {o}
+            </label>
+          ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AnalysisModal({
+  rows,
+  loading,
+  onClose,
+}: {
+  rows: AnalysisRow[];
+  loading: boolean;
+  onClose: () => void;
+}) {
+  const [brandFilter, setBrandFilter] = useState("");
+  const [catFilter, setCatFilter] = useState<Set<string>>(new Set());
+
+  const brands = [...new Set(rows.map((r) => r.company_name))].sort();
+  const afterBrand = brandFilter ? rows.filter((r) => r.company_name === brandFilter) : rows;
+  const categories = [...new Set(afterBrand.map((r) => r.product_type).filter(Boolean))].sort();
+  const filtered = catFilter.size > 0 ? afterBrand.filter((r) => catFilter.has(r.product_type)) : afterBrand;
+
+  // Reset category selection when brand changes and selected cats are no longer valid
+  useEffect(() => {
+    setCatFilter((prev) => {
+      const valid = new Set(categories);
+      const next = new Set([...prev].filter((c) => valid.has(c)));
+      return next.size === prev.size ? prev : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brandFilter]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-6"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-4xl max-h-[85vh] flex flex-col rounded-2xl overflow-hidden"
+        style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.2)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-5 sm:px-6 py-4" style={{ borderBottom: "1px solid #f0eae6" }}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold" style={{ color: "#525252" }}>Price Analysis</h2>
+              <p className="text-xs mt-0.5" style={{ color: "#8a8a8a" }}>
+                {loading ? "Loading…" : `${filtered.length} categor${filtered.length !== 1 ? "ies" : "y"} across ${brands.length} brand${brands.length !== 1 ? "s" : ""} (available variants only)`}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f0ed] transition-colors"
+            >
+              <X size={15} style={{ color: "#525252" }} />
+            </button>
+          </div>
+          {!loading && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {brands.length > 1 && (
+                <div className="w-40 sm:w-44">
+                  <FilterSelect value={brandFilter} onChange={setBrandFilter} options={brands} placeholder="All Brands" />
+                </div>
+              )}
+              {categories.length > 1 && (
+                <div className="w-44 sm:w-48">
+                  <MultiSelect selected={catFilter} onChange={setCatFilter} options={categories} placeholder="All Categories" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-auto">
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 size={22} className="animate-spin" style={{ color: "#d57282" }} />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex items-center justify-center py-20">
+              <p className="text-sm" style={{ color: "#8a8a8a" }}>No data found</p>
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="sticky top-0" style={{ backgroundColor: "#faf7f5" }}>
+                <tr style={{ borderBottom: "1px solid #f0eae6" }}>
+                  {["Brand", "Category", "Variants", "Min Price", "Median Price", "Max Price"].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide"
+                      style={{ color: "#8a8a8a" }}
+                    >
+                      {h === "Median Price" ? (
+                        <span className="inline-flex items-center gap-1">
+                          {h}
+                          <Tooltip>
+                            <TooltipTrigger render={<span />}>
+                              <Info size={12} className="cursor-help" style={{ color: "#b0a8a8" }} />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs max-w-[220px] leading-relaxed">
+                              The middle value when all prices are sorted low to high. Half the variants are priced below and half above this value.
+                            </TooltipContent>
+                          </Tooltip>
+                        </span>
+                      ) : h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((r, i) => (
+                  <tr
+                    key={`${r.company_name}-${r.product_type}-${i}`}
+                    style={{ borderBottom: "1px solid #f5f5f5" }}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#fffbf6")}
+                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "")}
+                  >
+                    <td className="px-4 py-2.5">
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
+                        style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                      >
+                        {r.company_name}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5" style={{ color: "#525252" }}>{r.product_type || "—"}</td>
+                    <td className="px-4 py-2.5 font-medium" style={{ color: "#525252" }}>{r.variants}</td>
+                    <td className="px-4 py-2.5" style={{ color: "#525252" }}>{formatINR(r.min_price)}</td>
+                    <td className="px-4 py-2.5 font-semibold" style={{ color: "#d57282" }}>{formatINR(r.median_price)}</td>
+                    <td className="px-4 py-2.5" style={{ color: "#525252" }}>{formatINR(r.max_price)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function CompetitionProductsPage() {
@@ -206,6 +520,9 @@ export default function CompetitionProductsPage() {
   const [loading, setLoading]             = useState(true);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({ company_names: [], product_types: [] });
   const [preview, setPreview]             = useState<{ src: string; alt: string } | null>(null);
+  const [analysisOpen, setAnalysisOpen]   = useState(false);
+  const [analysisData, setAnalysisData]   = useState<AnalysisRow[]>([]);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
 
   // Filters
   const [search,    setSearch]    = useState("");
@@ -243,7 +560,13 @@ export default function CompetitionProductsPage() {
 
       setProducts(json.products ?? []);
       setTotal(json.total ?? 0);
-      if (json.filter_options) setFilterOptions(json.filter_options);
+      if (json.filter_options) {
+        setFilterOptions(json.filter_options);
+        // Reset category if no longer valid for the selected brand
+        setCategory((prev) =>
+          prev && !(json.filter_options.product_types as string[]).includes(prev) ? "" : prev
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -279,6 +602,18 @@ export default function CompetitionProductsPage() {
     setPage(1);
   };
 
+  const openAnalysis = async () => {
+    setAnalysisOpen(true);
+    setAnalysisLoading(true);
+    try {
+      const res = await fetch("/api/competition-products/analysis");
+      const json = await res.json();
+      setAnalysisData(json.analysis ?? []);
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
   const showReset = !isDefault(search, company, category, available, priceMin, priceMax);
 
   return (
@@ -293,6 +628,20 @@ export default function CompetitionProductsPage() {
             {loading ? "Loading…" : `${total.toLocaleString()} variant${total !== 1 ? "s" : ""}`}
           </p>
         </div>
+        <button
+          onClick={openAnalysis}
+          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
+          style={{
+            backgroundColor: "#d57282",
+            color: "#ffffff",
+            boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
+          }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#ce5a56")}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#d57282")}
+        >
+          <BarChart2 size={15} />
+          Analysis
+        </button>
       </div>
 
       {/* Filter bar */}
@@ -302,7 +651,7 @@ export default function CompetitionProductsPage() {
       >
         <div className="flex flex-wrap gap-3 items-center">
           {/* Search */}
-          <div className="relative flex-1 min-w-48">
+          <div className="relative flex-1 min-w-[160px]">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#b0a8a8" }} />
             <input
               type="text"
@@ -391,6 +740,8 @@ export default function CompetitionProductsPage() {
           </div>
         ) : (
           <>
+            <div className="overflow-x-auto">
+            <div style={{ minWidth: "700px" }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: "1px solid #f0eae6" }}>
@@ -535,6 +886,8 @@ export default function CompetitionProductsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
@@ -574,6 +927,14 @@ export default function CompetitionProductsPage() {
 
       {preview && (
         <ImagePreview src={preview.src} alt={preview.alt} onClose={() => setPreview(null)} />
+      )}
+
+      {analysisOpen && (
+        <AnalysisModal
+          rows={analysisData}
+          loading={analysisLoading}
+          onClose={() => setAnalysisOpen(false)}
+        />
       )}
     </div>
   );
