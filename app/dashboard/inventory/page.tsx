@@ -951,7 +951,7 @@ export default function InventoryPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div
-          className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1 min-w-[220px] max-w-sm"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1 min-w-[160px] max-w-sm"
           style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2" }}
         >
           <Search size={14} style={{ color: "#8a8a8a" }} />
@@ -1024,6 +1024,8 @@ export default function InventoryPage() {
         className="rounded-2xl overflow-hidden"
         style={{ backgroundColor: "#ffffff", boxShadow: "0 2px 16px rgba(213,114,130,0.07)", border: "1px solid #E2E2E2" }}
       >
+        <div className="overflow-x-auto">
+        <div style={{ minWidth: "700px" }}>
         <div
           className="grid text-xs font-semibold uppercase tracking-wide px-5 py-3"
           style={{ gridTemplateColumns: COL, borderBottom: "1px solid #f0eae6", color: "#8a8a8a" }}
@@ -1054,6 +1056,8 @@ export default function InventoryPage() {
             ))}
           </div>
         )}
+        </div>
+        </div>
 
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3.5 text-sm" style={{ borderTop: "1px solid #f0eae6" }}>

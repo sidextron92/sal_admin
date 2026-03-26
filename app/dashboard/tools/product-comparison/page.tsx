@@ -546,6 +546,8 @@ export default function CompetitionBrandsPage() {
             <p className="text-xs" style={{ color: "#8a8a8a" }}>Click &ldquo;Add URL&rdquo; to start tracking a competitor</p>
           </div>
         ) : (
+          <div className="overflow-x-auto">
+          <div style={{ minWidth: "700px" }}>
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid #f0eae6" }}>
@@ -629,6 +631,8 @@ export default function CompetitionBrandsPage() {
               )}
             </tbody>
           </table>
+          </div>
+          </div>
         )}
       </div>
 

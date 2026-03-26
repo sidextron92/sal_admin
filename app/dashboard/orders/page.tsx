@@ -1834,7 +1834,7 @@ export default function OrdersPage() {
       <div className="flex flex-wrap gap-3 items-center">
         {/* Search */}
         <div
-          className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1 min-w-[220px] max-w-sm"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1 min-w-[160px] max-w-sm"
           style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2" }}
         >
           <Search size={14} style={{ color: "#8a8a8a" }} />
@@ -1901,6 +1901,8 @@ export default function OrdersPage() {
           border: "1px solid #E2E2E2",
         }}
       >
+        <div className="overflow-x-auto">
+        <div style={{ minWidth: "700px" }}>
         {/* Table header */}
         <div
           className="grid text-xs font-semibold uppercase tracking-wide px-5 py-3"
@@ -2070,6 +2072,8 @@ export default function OrdersPage() {
             })}
           </div>
         )}
+        </div>
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (

@@ -782,7 +782,7 @@ export default function PnLPage() {
         )}
 
         {/* Channel filter */}
-        <div className="flex items-center gap-1 ml-auto">
+        <div className="flex items-center gap-1">
           {CHANNELS.map((c) => (
             <button
               key={c}
