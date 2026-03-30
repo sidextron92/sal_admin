@@ -324,6 +324,14 @@ All three variant sets (all/organic/inorganic) are pre-fetched — UI toggles ar
 
 ---
 
+### `GET /api/visualizations`
+`app/api/visualizations/route.ts`
+Paginated visualizer plugin records (30/page) with search + filtering. Reads from `visualizations` table.
+Query params: `page`, `search` (ilike on product_title/product_handle/utm_source/utm_campaign), `product_type` (ilike), `date_from`, `date_to`.
+Returns `{ visualizations, total, page, pageSize, product_types }`. `product_types` is a distinct list for the filter dropdown.
+
+---
+
 ## Library Modules
 
 ### `lib/shopify.ts`
@@ -421,6 +429,9 @@ PK: `id` (bigserial). Columns: `invoice_number` (text, NOT NULL), `invoice_date`
 
 **`payment_status` is a GENERATED ALWAYS AS STORED column** — never include it in INSERT or UPDATE statements.
 
+### `visualizations`
+PK: `id` (uuid, default `gen_random_uuid()`). Columns: `created_at` (timestamptz), `product_id` (bigint), `product_title`, `product_handle`, `product_type`, `product_price` (bigint, in **paisa** — divide by 100 for INR), `variant_id` (bigint), `shop_domain`, `customer_id` (bigint, nullable), `utm_source/medium/campaign/term/content` (all nullable), `user_agent` (nullable), `room_image_url` (nullable — customer's uploaded room photo), `generated_image_url` (nullable — AI-generated visualization). Written externally by the Shopify Visualizer plugin, read-only in this app.
+
 ### Supabase Storage — `documents` bucket
 Public bucket. Max file size 50 MB. Allowed types: PDF, JPEG, PNG, WEBP.
 Invoice PDFs stored at path `invoices/{timestamp}-{sanitized_filename}`.
@@ -457,6 +468,7 @@ Both modes write to `inventory_logs`.
 | `/dashboard/expenses` | `app/dashboard/expenses/page.tsx` | Built — live data |
 | `/dashboard/purchase-invoices` | `app/dashboard/purchase-invoices/page.tsx` | Built — live data |
 | `/dashboard/analytics` | `app/dashboard/analytics/page.tsx` | Built — live data |
+| `/dashboard/tools/visualizer` | `app/dashboard/tools/visualizer/page.tsx` | Built — live data |
 | `/dashboard/ads` | — | Planned (Phase 5) |
 | `/dashboard/reconciliation` | — | Planned (Phase 5) |
 
@@ -500,6 +512,12 @@ Both modes write to `inventory_logs`.
 - **RTO Rate** — large % + delta badge (inverted colors: red = worse, green = improved).
 - **COD vs Prepaid** — donut with legend.
 - See `docs/analytics_claude.md` for full RPC definitions and chart logic.
+
+**Visualizer page (`app/dashboard/tools/visualizer/page.tsx`):**
+- **Card grid** (responsive: 1/2/3 cols) — each card shows room + generated image thumbnails side by side, product info (title, type badge, price), UTM pills, device type, relative timestamp.
+- **Filter bar** — debounced search (product title/handle/UTM), Product Type dropdown, Date From/To. Default: last 30 days.
+- **Image preview modal** — full-screen overlay on thumbnail click, ESC/backdrop to close.
+- Read-only — no CRUD operations, data written by external Shopify plugin.
 
 ---
 

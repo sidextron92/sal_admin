@@ -18,6 +18,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/dashboard/settings/sync": "Settings · Sync",
   "/dashboard/tools/product-comparison": "Tools · Competition Brands",
   "/dashboard/tools/competition-products": "Tools · Competition Products",
+  "/dashboard/tools/visualizer": "Tools · Visualizer Plugin",
 };
 
 export default function DashboardLayout({

@@ -21,6 +21,7 @@ import {
   RefreshCw,
   Wrench,
   GitCompare,
+  Eye,
 } from "lucide-react";
 import {
   Tooltip,
@@ -61,6 +62,7 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: "Competition Brands", href: "/dashboard/tools/product-comparison", icon: GitCompare, built: true },
       { label: "Competition Products", href: "/dashboard/tools/competition-products", icon: BarChart2, built: true },
+      { label: "Visualizer", href: "/dashboard/tools/visualizer", icon: Eye, built: true },
     ],
   },
   {
