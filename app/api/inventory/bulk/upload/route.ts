@@ -6,16 +6,16 @@ import { fetchPrimaryLocationId, pushInventoryToShopify } from '@/lib/shopify'
 export const dynamic = 'force-dynamic'
 
 // Column indices (1-based) — must stay in sync with download route
-// A=1 variant_id, B=2 product_title, C=3 image, D=4 status,
-// E=5 current_cost, F=6 current_sale, G=7 current_virtual,
-// H=8 current_physical, I=9 current_total,
-// J=10 updatedCostPrice, K=11 updatedVirtualInventory, L=12 updatedPhysicalInventory,
-// M=13 totalInventory (formula), N=14 remarks, O=15 validationError (formula — not read on upload)
+// A=1 variant_id, B=2 product_title, C=3 image, D=4 subtitle, E=5 display_color,
+// F=6 status, G=7 current_cost, H=8 current_sale, I=9 current_virtual,
+// J=10 current_physical, K=11 current_total,
+// L=12 updatedCostPrice, M=13 updatedVirtualInventory, N=14 updatedPhysicalInventory,
+// O=15 totalInventory (formula), P=16 remarks, Q=17 validationError (formula — not read on upload)
 const C_VARIANT_ID   = 1
-const C_UPDATED_COST = 10
-const C_UPDATED_VIRT = 11
-const C_UPDATED_PHYS = 12
-const C_REMARKS      = 14
+const C_UPDATED_COST = 12
+const C_UPDATED_VIRT = 13
+const C_UPDATED_PHYS = 14
+const C_REMARKS      = 16
 
 function cellValue(row: ExcelJS.Row, col: number): string {
   const cell = row.getCell(col)

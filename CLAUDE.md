@@ -64,7 +64,7 @@ Returns `{ success, fetched, updated, duration_ms }`.
 
 ### `POST /api/sync/products`
 `app/api/sync/products/route.ts`
-Fetches all active Shopify products + variants → upserts `products` + `product_variants`. Sets `inventory_changed_by: 'shopify_sync'`. Never overwrites `cost`, `virtual_inventory`, `physical_inventory`. Populates `inventory_item_id` per variant (needed for Shopify write-back).
+Fetches all active Shopify products + variants → upserts `products` + `product_variants`. Sets `inventory_changed_by: 'shopify_sync'`. Never overwrites `cost`, `virtual_inventory`, `physical_inventory`. Populates `inventory_item_id` per variant (needed for Shopify write-back). Also fetches product metafields `custom.subtitle`, `custom.display_color_name`, and `seo.description` into the `products` table.
 
 ---
 
@@ -222,14 +222,16 @@ Streams a styled `.xlsx` of all active variants.
 | A | variant_id | locked |
 | B | product_title | locked |
 | C | image (`=IMAGE(url)`) | locked |
-| D | status | locked |
-| E–I | current cost/sale/virtual/physical/total | locked |
-| J | updatedCostPrice | **editable** |
-| K | updatedVirtualInventory | **editable** |
-| L | updatedPhysicalInventory | **editable** |
-| M | totalInventory (`=K+L`) | locked, formula |
-| N | updateInventoryRemarks | **editable** |
-| O | validationError | locked, formula |
+| D | subtitle | locked |
+| E | display_color_name | locked |
+| F | status | locked |
+| G–K | current cost/sale/virtual/physical/total | locked |
+| L | updatedCostPrice | **editable** |
+| M | updatedVirtualInventory | **editable** |
+| N | updatedPhysicalInventory | **editable** |
+| O | totalInventory (`=M+N`) | locked, formula |
+| P | updateInventoryRemarks | **editable** |
+| Q | validationError | locked, formula |
 
 Sheet password-protected (`maeri_bulk`), filters/sort allowed.
 
@@ -387,7 +389,7 @@ PK: `line_item_id`. FK: `order_id → orders ON DELETE CASCADE`. Indexes: `order
 PK: `id` (bigserial). Columns: `synced_at`, `orders_upserted`, `items_upserted`, `status`, `error_message`, `duration_ms`, `platform`, `type`.
 
 ### `products`
-PK: `product_id`. Columns: `title`, `handle`, `vendor`, `product_type`, `tags`, `status`, `total_inventory`, `total_variants`, `image_url`, `published_at`, `created_at`, `updated_at`, `synced_at`.
+PK: `product_id`. Columns: `title`, `subtitle`, `display_color_name`, `seo_description`, `handle`, `vendor`, `product_type`, `tags`, `status`, `total_inventory`, `total_variants`, `image_url`, `published_at`, `created_at`, `updated_at`, `synced_at`.
 
 ### `product_variants`
 PK: `variant_id`. FK: `product_id → products`.

@@ -182,6 +182,9 @@ const PRODUCTS_QUERY = `
           publishedAt
           createdAt
           updatedAt
+          seo { description }
+          subtitle: metafield(namespace: "custom", key: "subtitle") { value }
+          displayColorName: metafield(namespace: "custom", key: "display_color_name") { value }
           images(first: 1) {
             edges { node { url } }
           }
@@ -224,6 +227,9 @@ const INVENTORY_SET_MUTATION = `
 export interface ShopifyProduct {
   product_id: string
   title: string
+  subtitle: string
+  display_color_name: string
+  seo_description: string
   handle: string
   vendor: string
   product_type: string
@@ -333,6 +339,9 @@ export async function fetchProducts(): Promise<FetchProductsResult> {
       products.push({
         product_id: productId,
         title: p.title,
+        subtitle: p.subtitle?.value ?? '',
+        display_color_name: p.displayColorName?.value ?? '',
+        seo_description: p.seo?.description ?? '',
         handle: p.handle,
         vendor: p.vendor ?? '',
         product_type: p.productType ?? '',

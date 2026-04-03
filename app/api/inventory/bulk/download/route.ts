@@ -8,22 +8,24 @@ export const dynamic = 'force-dynamic'
 // A=1  variant_id
 // B=2  product_title
 // C=3  image            (=IMAGE formula, locked)
-// D=4  status           (locked)
-// E=5  current_cost_price
-// F=6  current_sale_price
-// G=7  current_virtual_inventory
-// H=8  current_physical_inventory
-// I=9  current_total_inventory
-// J=10 updatedCostPrice          ← EDITABLE
-// K=11 updatedVirtualInventory   ← EDITABLE
-// L=12 updatedPhysicalInventory  ← EDITABLE
-// M=13 totalInventory            (formula, locked)
-// N=14 updateInventoryRemarks    ← EDITABLE
-// O=15 validationError           (formula, locked)
+// D=4  subtitle         (locked)
+// E=5  display_color    (locked)
+// F=6  status           (locked)
+// G=7  current_cost_price
+// H=8  current_sale_price
+// I=9  current_virtual_inventory
+// J=10 current_physical_inventory
+// K=11 current_total_inventory
+// L=12 updatedCostPrice          ← EDITABLE
+// M=13 updatedVirtualInventory   ← EDITABLE
+// N=14 updatedPhysicalInventory  ← EDITABLE
+// O=15 totalInventory            (formula, locked)
+// P=16 updateInventoryRemarks    ← EDITABLE
+// Q=17 validationError           (formula, locked)
 
-const LOCKED_COL_MAX = 9   // cols 1–9 are locked info
-const EDITABLE_COLS  = new Set([10, 11, 12, 14])
-const FORMULA_COLS   = new Set([3, 13, 15])
+const LOCKED_COL_MAX = 11  // cols 1–11 are locked info
+const EDITABLE_COLS  = new Set([12, 13, 14, 16])
+const FORMULA_COLS   = new Set([3, 15, 17])
 
 const LOCKED_BG  = 'FFE8E8E8'
 const EDITABLE_BG = 'FFFFFFCC'
@@ -38,7 +40,7 @@ export async function GET() {
       .select(`
         variant_id, price, cost,
         inventory_quantity, virtual_inventory, physical_inventory,
-        products!inner ( title, status, image_url )
+        products!inner ( title, subtitle, display_color_name, status, image_url )
       `)
       .eq('products.status', 'ACTIVE')
       .order('products(title)', { ascending: true })
@@ -59,18 +61,20 @@ export async function GET() {
       { key: 'variant_id',         width: 26 },  // A
       { key: 'product_title',      width: 38 },  // B
       { key: 'image',              width: 16 },  // C
-      { key: 'status',             width: 12 },  // D
-      { key: 'current_cost',       width: 20 },  // E
-      { key: 'current_sale',       width: 20 },  // F
-      { key: 'current_virtual',    width: 22 },  // G
-      { key: 'current_physical',   width: 22 },  // H
-      { key: 'current_total',      width: 20 },  // I
-      { key: 'updated_cost',       width: 22 },  // J
-      { key: 'updated_virtual',    width: 26 },  // K
-      { key: 'updated_physical',   width: 26 },  // L
-      { key: 'total_inventory',    width: 18 },  // M
-      { key: 'remarks',            width: 40 },  // N
-      { key: 'validation_error',   width: 54 },  // O
+      { key: 'subtitle',           width: 38 },  // D
+      { key: 'display_color',      width: 18 },  // E
+      { key: 'status',             width: 12 },  // F
+      { key: 'current_cost',       width: 20 },  // G
+      { key: 'current_sale',       width: 20 },  // H
+      { key: 'current_virtual',    width: 22 },  // I
+      { key: 'current_physical',   width: 22 },  // J
+      { key: 'current_total',      width: 20 },  // K
+      { key: 'updated_cost',       width: 22 },  // L
+      { key: 'updated_virtual',    width: 26 },  // M
+      { key: 'updated_physical',   width: 26 },  // N
+      { key: 'total_inventory',    width: 18 },  // O
+      { key: 'remarks',            width: 40 },  // P
+      { key: 'validation_error',   width: 54 },  // Q
     ]
 
     // ── Header row ──────────────────────────────────────────────────────
@@ -78,6 +82,8 @@ export async function GET() {
       'variant_id',
       'product_title',
       'image',
+      'subtitle',
+      'display_color_name',
       'status',
       'current_cost_price',
       'current_sale_price',
@@ -105,24 +111,26 @@ export async function GET() {
     // ── Data rows ────────────────────────────────────────────────────────
     variants.forEach((v, i) => {
       const rowNum = i + 2
-      const p = v.products as unknown as { title: string; status: string; image_url: string | null }
+      const p = v.products as unknown as { title: string; subtitle: string; display_color_name: string; status: string; image_url: string | null }
 
       const dataRow = ws.addRow([
         v.variant_id,   // A
         p.title,        // B
         null,           // C — image formula set below
-        p.status,       // D
-        v.cost,         // E
-        v.price,        // F
-        v.virtual_inventory,   // G
-        v.physical_inventory,  // H
-        v.inventory_quantity,  // I
-        null,           // J — updatedCostPrice
-        null,           // K — updatedVirtualInventory
-        null,           // L — updatedPhysicalInventory
-        null,           // M — totalInventory formula
-        null,           // N — remarks
-        null,           // O — validationError formula
+        p.subtitle,     // D
+        p.display_color_name, // E
+        p.status,       // F
+        v.cost,         // G
+        v.price,        // H
+        v.virtual_inventory,   // I
+        v.physical_inventory,  // J
+        v.inventory_quantity,  // K
+        null,           // L — updatedCostPrice
+        null,           // M — updatedVirtualInventory
+        null,           // N — updatedPhysicalInventory
+        null,           // O — totalInventory formula
+        null,           // P — remarks
+        null,           // Q — validationError formula
       ])
       dataRow.height = 40  // taller rows so images are visible
 
@@ -131,8 +139,8 @@ export async function GET() {
         cell.alignment = { vertical: 'middle', wrapText: false }
 
         if (colNum <= LOCKED_COL_MAX || FORMULA_COLS.has(colNum)) {
-          cell.fill       = { type: 'pattern', pattern: 'solid', fgColor: { argb: colNum === 15 ? ERROR_BG : LOCKED_BG } }
-          cell.font       = { size: 10, color: { argb: colNum === 15 ? 'FFCC0000' : 'FF444444' } }
+          cell.fill       = { type: 'pattern', pattern: 'solid', fgColor: { argb: colNum === 17 ? ERROR_BG : LOCKED_BG } }
+          cell.font       = { size: 10, color: { argb: colNum === 17 ? 'FFCC0000' : 'FF444444' } }
           cell.protection = { locked: true }
         } else if (EDITABLE_COLS.has(colNum)) {
           cell.fill       = { type: 'pattern', pattern: 'solid', fgColor: { argb: EDITABLE_BG } }
@@ -142,9 +150,9 @@ export async function GET() {
       })
 
       // Number formats
-      ws.getCell(rowNum, 5).numFmt  = '#,##0.00'  // current_cost
-      ws.getCell(rowNum, 6).numFmt  = '#,##0.00'  // current_sale
-      ws.getCell(rowNum, 10).numFmt = '#,##0.00'  // updated_cost
+      ws.getCell(rowNum, 7).numFmt  = '#,##0.00'  // current_cost
+      ws.getCell(rowNum, 8).numFmt  = '#,##0.00'  // current_sale
+      ws.getCell(rowNum, 12).numFmt = '#,##0.00'  // updated_cost
 
       // ── C: IMAGE formula ──────────────────────────────────────────────
       if (p.image_url) {
@@ -153,29 +161,29 @@ export async function GET() {
         }
       }
 
-      // ── M: totalInventory formula ─────────────────────────────────────
-      const cellK = `K${rowNum}`
-      const cellL = `L${rowNum}`
-      ws.getCell(rowNum, 13).value = {
-        formula: `IF(AND(${cellK}="",${cellL}=""),"",IFERROR(${cellK}+${cellL},""))`,
+      // ── O: totalInventory formula ─────────────────────────────────────
+      const cellM = `M${rowNum}`
+      const cellN = `N${rowNum}`
+      ws.getCell(rowNum, 15).value = {
+        formula: `IF(AND(${cellM}="",${cellN}=""),"",IFERROR(${cellM}+${cellN},""))`,
       }
 
-      // ── O: validationError formula ────────────────────────────────────
-      const J = `J${rowNum}`
-      const K = `K${rowNum}`
+      // ── Q: validationError formula ────────────────────────────────────
       const L = `L${rowNum}`
+      const M = `M${rowNum}`
+      const N = `N${rowNum}`
 
-      const e1 = `IF(AND(${J}<>"",NOT(ISNUMBER(${J}))),"Cost must be a number. ","")`
-      const e2 = `IF(AND(${J}<>"",ISNUMBER(${J}),${J}<0),"Cost cannot be negative. ","")`
-      const e3 = `IF(AND(${K}<>"",NOT(ISNUMBER(${K}))),"Virtual must be a number. ","")`
-      const e4 = `IF(AND(${K}<>"",ISNUMBER(${K}),${K}<0),"Virtual cannot be negative. ","")`
-      const e5 = `IF(AND(${K}<>"",ISNUMBER(${K}),${K}>=0,IFERROR(INT(${K}),${K})<>${K}),"Virtual must be whole number. ","")`
-      const e6 = `IF(AND(${L}<>"",NOT(ISNUMBER(${L}))),"Physical must be a number. ","")`
-      const e7 = `IF(AND(${L}<>"",ISNUMBER(${L}),${L}<0),"Physical cannot be negative. ","")`
-      const e8 = `IF(AND(${L}<>"",ISNUMBER(${L}),${L}>=0,IFERROR(INT(${L}),${L})<>${L}),"Physical must be whole number. ","")`
-      const e9 = `IF(AND(${K}<>"",${L}=""),"Physical required when Virtual is set. ",IF(AND(${L}<>"",${K}=""),"Virtual required when Physical is set. ",""))`
+      const e1 = `IF(AND(${L}<>"",NOT(ISNUMBER(${L}))),"Cost must be a number. ","")`
+      const e2 = `IF(AND(${L}<>"",ISNUMBER(${L}),${L}<0),"Cost cannot be negative. ","")`
+      const e3 = `IF(AND(${M}<>"",NOT(ISNUMBER(${M}))),"Virtual must be a number. ","")`
+      const e4 = `IF(AND(${M}<>"",ISNUMBER(${M}),${M}<0),"Virtual cannot be negative. ","")`
+      const e5 = `IF(AND(${M}<>"",ISNUMBER(${M}),${M}>=0,IFERROR(INT(${M}),${M})<>${M}),"Virtual must be whole number. ","")`
+      const e6 = `IF(AND(${N}<>"",NOT(ISNUMBER(${N}))),"Physical must be a number. ","")`
+      const e7 = `IF(AND(${N}<>"",ISNUMBER(${N}),${N}<0),"Physical cannot be negative. ","")`
+      const e8 = `IF(AND(${N}<>"",ISNUMBER(${N}),${N}>=0,IFERROR(INT(${N}),${N})<>${N}),"Physical must be whole number. ","")`
+      const e9 = `IF(AND(${M}<>"",${N}=""),"Physical required when Virtual is set. ",IF(AND(${N}<>"",${M}=""),"Virtual required when Physical is set. ",""))`
 
-      ws.getCell(rowNum, 15).value = {
+      ws.getCell(rowNum, 17).value = {
         formula: `CONCATENATE(${e1},${e2},${e3},${e4},${e5},${e6},${e7},${e8},${e9})`,
       }
     })
