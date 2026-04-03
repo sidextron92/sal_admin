@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       .select(
         `variant_id, title, price, sku, inventory_quantity,
          cost, virtual_inventory, physical_inventory, inventory_remark,
-         products!inner ( product_id, title, handle, image_url, vendor, product_type, status )`,
+         products!inner ( product_id, title, display_color_name, handle, image_url, vendor, product_type, status )`,
         { count: 'exact' }
       )
       .eq('products.status', 'ACTIVE')

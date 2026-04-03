@@ -26,6 +26,7 @@ import {
 interface ProductInfo {
   product_id: string;
   title: string;
+  display_color_name: string;
   image_url: string;
   vendor: string;
   product_type: string;
@@ -832,6 +833,9 @@ function VariantTableRow({ variant, onRefresh }: { variant: VariantRow; onRefres
         {/* Product + variant name */}
         <div className="min-w-0 px-3">
           <p className="text-sm font-medium truncate" style={{ color: "#525252" }}>{p.title}</p>
+          {p.display_color_name && (
+            <p className="text-xs truncate" style={{ color: "#8a8a8a" }}>{p.display_color_name}</p>
+          )}
           {p.product_type && (
             <p className="text-xs truncate" style={{ color: "#b0b0b0" }}>{p.product_type}</p>
           )}
