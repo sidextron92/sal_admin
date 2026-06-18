@@ -81,7 +81,8 @@ function parseDevice(userAgent: string | null): { label: string; icon: "mobile" 
   return { label: "Desktop", icon: "desktop" };
 }
 
-function getProductTypeBadge(type: string): { background: string; color: string } {
+function getProductTypeBadge(type: string | null): { background: string; color: string } {
+  if (!type) return { background: "#f5f0ed", color: "#8a8a8a" };
   const normalized = type.toLowerCase();
   if (normalized === "bedsheet") return { background: "#f9e8eb", color: "#d57282" };
   if (normalized === "comforter") return { background: "#e8f5ff", color: "#1a8fde" };
@@ -269,16 +270,18 @@ function VisualizationCard({ item, onPreview }: VisualizationCardProps) {
           >
             {item.product_title}
           </p>
-          <span
-            className="shrink-0 rounded-full px-2 py-0.5"
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              ...typeBadgeStyle,
-            }}
-          >
-            {item.product_type}
-          </span>
+          {item.product_type && (
+            <span
+              className="shrink-0 rounded-full px-2 py-0.5"
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                ...typeBadgeStyle,
+              }}
+            >
+              {item.product_type}
+            </span>
+          )}
         </div>
 
         {/* Price */}
