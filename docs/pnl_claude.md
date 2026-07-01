@@ -90,13 +90,13 @@ Uses a **CTE** to separate order-level and line-item aggregates:
 
 ## Page (`app/dashboard/pnl/page.tsx`)
 
-**Filters:** Month/Custom Range toggle → `<input type="month">` or two date inputs. Channel pills: All / Shopify / Amazon / Offline. Expenses note shown when channel ≠ ALL (expenses are always global).
+**Filters:** Single month dropdown (Month + Year combined, last 24 months). No custom date range. No channel filter — backend still accepts `channel` but frontend always sends `ALL`.
 
-**Fetch:** `useEffect` with `AbortController`. Returns early if custom mode and either date is empty. Checks `r.ok` before setting `data` — error responses go to `error` state, not `data`.
+**Fetch:** `useEffect` with `AbortController`. Checks `r.ok` before setting `data` — error responses go to `error` state, not `data`.
 
 **Sub-components (all inline):**
 - `KpiCard` — hero metrics (Net Revenue, Gross Margin %, CM3 %, EBITDA %)
-- `PnLWaterfallTable` — static `WATERFALL_ROWS` config array drives rendering; result rows have coloured left border + tinted background; Info icon surfaces tooltips on hover
+- `PnLWaterfallTable` — static `WATERFALL_ROWS` config array drives rendering; result rows have coloured left border + tinted background. **Info icon** opens a click-away popover showing: the line item's definition, its amount formula, and what the percentage is of (e.g. "42.5% of Net Revenue").
 - `RtoStatsCard` — count + rate pill, non-subtraction disclaimer
 - `PnLTrendChart` — Recharts `BarChart`, 5 grouped bars per month (Net Revenue `#d57282`, CM1 `#27a559`, CM2 `#4a9fde`, CM3 `#f0a64e`, EBITDA `#7c6fde`). `ReferenceLine y={0}` shown when any value is negative. Custom tooltip shows `% of Net Revenue` suffix for CM1/CM2/CM3/EBITDA (no `formatter` prop — per CLAUDE.md Recharts caveat). `TREND_SERIES` config array drives bar rendering.
 - `PnLSkeleton` — pulse placeholder for loading state
@@ -109,6 +109,6 @@ Uses a **CTE** to separate order-level and line-item aggregates:
 |---|---|
 | COGS = current cost, not historical | Waterfall COGS row tooltip + footnote |
 | Gross Revenue includes GST | Gross Revenue row tooltip |
-| Expenses are global (no channel split) | Filter bar note when channel ≠ ALL |
+| Expenses are global (no channel split) | Waterfall sub-item formulas reference expense table |
 | RTO not subtracted from revenue | RTO card disclaimer |
 | Trend chart expenses are also global | Same as waterfall — channel filter only affects revenue/COGS in trend |

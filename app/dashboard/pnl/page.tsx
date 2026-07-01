@@ -16,9 +16,6 @@ import { TrendingUp, AlertCircle, Info } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type Channel = "ALL" | "Shopify" | "Amazon" | "Offline";
-type FilterMode = "month" | "custom";
-
 interface PnLRevenue {
   gross_revenue: number;
   total_discounts: number;
@@ -65,7 +62,7 @@ interface PnLResponse {
   expenses: PnLExpenses;
   rto: PnLRto;
   trend: TrendMonth[];
-  meta: { date_from: string; date_to: string; channel: string; cogs_note: string };
+  meta: { date_from: string; date_to: string; cogs_note: string };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -135,6 +132,98 @@ function KpiCard({
   );
 }
 
+// ── Info Popover ───────────────────────────────────────────────────────────
+
+function InfoPopover({
+  open,
+  anchorRect,
+  definition,
+  amountFormula,
+  pctOf,
+  pctValue,
+  onClose,
+}: {
+  open: boolean;
+  anchorRect: DOMRect | null;
+  definition: string;
+  amountFormula?: string;
+  pctOf: string;
+  pctValue?: number;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const handleDocClick = () => onClose();
+    document.addEventListener("mousedown", handleDocClick);
+    return () => document.removeEventListener("mousedown", handleDocClick);
+  }, [open, onClose]);
+
+  if (!open || !anchorRect) return null;
+
+  const leftPos = Math.min(
+    anchorRect.left,
+    typeof window !== "undefined" ? window.innerWidth - 300 : anchorRect.left
+  );
+
+  return (
+    <div
+      onMouseDown={(e) => e.stopPropagation()}
+      style={{
+        position: "fixed",
+        top: anchorRect.bottom + 6,
+        left: leftPos,
+        zIndex: 50,
+        width: 280,
+        backgroundColor: "#fff",
+        border: "1px solid #E2E2E2",
+        borderRadius: 12,
+        padding: "12px 14px",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+        fontSize: 12,
+        color: "#525252",
+        lineHeight: 1.5,
+      }}
+    >
+      <p style={{ fontWeight: 600, marginBottom: 4, fontSize: 13 }}>
+        {pctValue !== undefined
+          ? `${pctValue.toFixed(1)}% of ${pctOf}`
+          : "Details"}
+      </p>
+      <p style={{ marginBottom: amountFormula ? 8 : 0, color: "#6b6b6b" }}>
+        {definition}
+      </p>
+      {amountFormula && (
+        <>
+          <p
+            style={{
+              fontWeight: 600,
+              marginBottom: 2,
+              color: "#8a8a8a",
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          >
+            Formula
+          </p>
+          <p
+            style={{
+              color: "#6b6b6b",
+              fontFamily: "monospace",
+              fontSize: 11,
+              backgroundColor: "#f5f5f5",
+              padding: "4px 6px",
+              borderRadius: 6,
+            }}
+          >
+            {amountFormula}
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── P&L Waterfall Table ────────────────────────────────────────────────────
 
 type RowKind = "item" | "result" | "divider" | "subitem";
@@ -142,133 +231,184 @@ type RowKind = "item" | "result" | "divider" | "subitem";
 interface TableRowConfig {
   kind: RowKind;
   label: string;
-  tooltip?: string;
+  definition: string;
+  amountFormula?: string;
+  pctOf: string;
   getValue?: (d: PnLResponse) => number;
   getPct?: (d: PnLResponse) => number;
-  negative?: boolean; // amount should be shown as negative (deduction)
+  negative?: boolean;
 }
 
 const WATERFALL_ROWS: TableRowConfig[] = [
   {
     kind: "item",
     label: "Gross Revenue",
-    tooltip: "Sum of original unit prices × quantity across all line items. Includes GST (not stripped).",
+    definition: "Sum of original unit prices × quantity across all line items. Includes GST (not stripped).",
+    amountFormula: "SUM(line_total) = original_unit_price × qty",
+    pctOf: "Net Revenue",
     getValue: (d) => d.revenue.gross_revenue,
   },
   {
     kind: "subitem",
     label: "− Discounts",
-    tooltip: "Difference between original line totals and discounted line totals.",
+    definition: "Price reductions given to customers on orders.",
+    amountFormula: "SUM(line_total − line_total_discounted)",
+    pctOf: "Net Revenue",
     getValue: (d) => d.revenue.total_discounts,
     negative: true,
   },
   {
     kind: "subitem",
     label: "+ Shipping Revenue",
-    tooltip: "Shipping charges collected from customers (total_price − subtotal_price per order).",
+    definition: "Shipping charges collected from customers.",
+    amountFormula: "SUM(total_price − subtotal_price)",
+    pctOf: "Net Revenue",
     getValue: (d) => d.revenue.shipping_revenue,
   },
   {
     kind: "divider",
     label: "",
+    definition: "",
+    pctOf: "",
   },
   {
     kind: "result",
     label: "Net Revenue",
-    tooltip: "Gross Revenue − Discounts + Shipping Revenue = SUM(orders.total_price).",
+    definition: "Revenue after discounts, plus shipping charges collected.",
+    amountFormula: "Gross Revenue − Discounts + Shipping Revenue",
+    pctOf: "Net Revenue",
     getValue: (d) => d.revenue.net_revenue,
     getPct: () => 100,
   },
   {
     kind: "subitem",
     label: "− COGS",
-    tooltip:
-      "Cost of goods sold: SUM(variant.cost × quantity). Uses current cost snapshot — not historical cost at time of sale.",
+    definition: "Cost of goods sold. Uses current cost snapshot — not historical cost at time of sale.",
+    amountFormula: "SUM(variant.cost × quantity)",
+    pctOf: "Net Revenue",
     getValue: (d) => d.revenue.cogs,
     negative: true,
   },
   {
     kind: "divider",
     label: "",
+    definition: "",
+    pctOf: "",
   },
   {
     kind: "result",
     label: "Gross Profit (CM1)",
+    definition: "Net Revenue minus cost of goods sold.",
+    amountFormula: "Net Revenue − COGS",
+    pctOf: "Net Revenue",
     getValue: (d) => d.revenue.gross_profit,
     getPct: (d) => d.revenue.gross_margin_pct,
   },
   {
     kind: "subitem",
     label: "− Logistics",
+    definition: "Shipping and delivery costs incurred to fulfill orders.",
+    amountFormula: "expenses WHERE function_name = 'LOGISTIC'",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.logistic,
     negative: true,
   },
   {
     kind: "subitem",
     label: "− Packaging",
+    definition: "Packaging material and supply costs.",
+    amountFormula: "expenses WHERE function_name = 'PACKAGING'",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.packaging,
     negative: true,
   },
   {
     kind: "subitem",
     label: "− Payment Gateway",
+    definition: "Payment processing and gateway transaction fees.",
+    amountFormula: "expenses WHERE function_name = 'PAYMENT_GATEWAY'",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.payment_gateway,
     negative: true,
   },
   {
     kind: "divider",
     label: "",
+    definition: "",
+    pctOf: "",
   },
   {
     kind: "result",
     label: "CM2 (Fulfillment Contribution)",
-    tooltip: "Gross Profit after logistics, packaging and payment gateway costs.",
+    definition: "Gross Profit after logistics, packaging and payment gateway costs.",
+    amountFormula: "CM1 − Logistics − Packaging − Payment Gateway",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.cm2,
     getPct: (d) => d.expenses.cm2_margin_pct,
   },
   {
     kind: "subitem",
     label: "− Marketing",
+    definition: "Advertising and marketing spend.",
+    amountFormula: "expenses WHERE function_name = 'MARKETING'",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.marketing,
     negative: true,
   },
   {
     kind: "divider",
     label: "",
+    definition: "",
+    pctOf: "",
   },
   {
     kind: "result",
     label: "CM3 (Contribution Margin)",
-    tooltip: "CM2 minus marketing spend. Measures true variable-cost profitability.",
+    definition: "CM2 minus marketing spend. Measures true variable-cost profitability.",
+    amountFormula: "CM2 − Marketing",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.cm3,
     getPct: (d) => d.expenses.cm3_margin_pct,
   },
   {
     kind: "subitem",
     label: "− Employee",
+    definition: "Employee salaries and benefit costs.",
+    amountFormula: "expenses WHERE function_name = 'EMPLOYEE'",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.employee,
     negative: true,
   },
   {
     kind: "subitem",
     label: "− Software",
+    definition: "Software and tool subscription costs.",
+    amountFormula: "expenses WHERE function_name = 'SOFTWARE'",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.software,
     negative: true,
   },
   {
     kind: "subitem",
     label: "− Miscellaneous",
+    definition: "Other operating expenses not categorised above.",
+    amountFormula: "expenses WHERE function_name = 'MISCELLANEOUS'",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.miscellaneous,
     negative: true,
   },
   {
     kind: "divider",
     label: "",
+    definition: "",
+    pctOf: "",
   },
   {
     kind: "result",
     label: "EBITDA",
-    tooltip: "Earnings before interest, tax, depreciation & amortisation.",
+    definition: "Earnings before interest, tax, depreciation and amortisation.",
+    amountFormula: "CM3 − Employee − Software − Miscellaneous",
+    pctOf: "Net Revenue",
     getValue: (d) => d.expenses.ebitda,
     getPct: (d) => d.expenses.ebitda_margin_pct,
   },
@@ -276,6 +416,18 @@ const WATERFALL_ROWS: TableRowConfig[] = [
 
 function PnLWaterfallTable({ data }: { data: PnLResponse }) {
   const netRev = data.revenue.net_revenue;
+  const [activeInfo, setActiveInfo] = useState<number | null>(null);
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+
+  function handleInfoClick(e: React.MouseEvent, index: number) {
+    e.stopPropagation();
+    if (activeInfo === index) {
+      setActiveInfo(null);
+    } else {
+      setAnchorRect(e.currentTarget.getBoundingClientRect());
+      setActiveInfo(index);
+    }
+  }
 
   return (
     <div
@@ -358,14 +510,26 @@ function PnLWaterfallTable({ data }: { data: PnLResponse }) {
                   fontWeight: isResult ? 600 : 400,
                   fontFamily: "var(--font-poppins), sans-serif",
                 }}
-                title={row.tooltip}
               >
                 {row.label}
               </span>
-              {row.tooltip && (
-                <span title={row.tooltip} style={{ display: "inline-flex", flexShrink: 0 }}>
-                  <Info size={11} style={{ color: "#c0b8b8" }} />
-                </span>
+              {row.definition && (
+                <button
+                  onClick={(e) => handleInfoClick(e, i)}
+                  className="shrink-0"
+                  style={{
+                    display: "inline-flex",
+                    cursor: "pointer",
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                  }}
+                >
+                  <Info
+                    size={11}
+                    style={{ color: activeInfo === i ? "#d57282" : "#c0b8b8" }}
+                  />
+                </button>
               )}
             </div>
 
@@ -389,6 +553,24 @@ function PnLWaterfallTable({ data }: { data: PnLResponse }) {
           </div>
         );
       })}
+
+      <InfoPopover
+        open={activeInfo !== null}
+        anchorRect={anchorRect}
+        onClose={() => setActiveInfo(null)}
+        definition={activeInfo !== null ? WATERFALL_ROWS[activeInfo].definition : ""}
+        amountFormula={activeInfo !== null ? WATERFALL_ROWS[activeInfo].amountFormula : undefined}
+        pctOf={activeInfo !== null ? WATERFALL_ROWS[activeInfo].pctOf : ""}
+        pctValue={
+          activeInfo !== null && WATERFALL_ROWS[activeInfo].getValue
+            ? (WATERFALL_ROWS[activeInfo].getPct
+                ? WATERFALL_ROWS[activeInfo].getPct!(data)
+                : netRev !== 0
+                  ? Math.round((Math.abs(WATERFALL_ROWS[activeInfo].getValue!(data)) / Math.abs(netRev)) * 1000) / 10
+                  : 0)
+            : undefined
+        }
+      />
     </div>
   );
 }
@@ -566,7 +748,7 @@ function PnLTrendChart({ trend }: { trend: TrendMonth[] }) {
   );
 }
 
-// ── Month/Year Picker (Safari-safe replacement for input[type=month]) ──────
+// ── Month/Year Picker (single dropdown) ────────────────────────────────────
 
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
@@ -574,9 +756,18 @@ const MONTH_NAMES = [
 ];
 
 function MonthYearPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [selYear, selMonth] = value.split("-").map(Number);
-  const currentYear = new Date().getFullYear();
-  const years = [currentYear, currentYear - 1, currentYear - 2];
+  const now = new Date();
+  const options: { label: string; value: string }[] = [];
+
+  for (let i = 0; i < 24; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    options.push({
+      label: `${MONTH_NAMES[d.getMonth()]} ${y}`,
+      value: `${y}-${String(m).padStart(2, "0")}`,
+    });
+  }
 
   const selectStyle: React.CSSProperties = {
     borderRadius: 12,
@@ -596,26 +787,15 @@ function MonthYearPicker({ value, onChange }: { value: string; onChange: (v: str
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <select
-        value={selMonth}
-        onChange={(e) => onChange(`${selYear}-${String(Number(e.target.value)).padStart(2, "0")}`)}
-        style={selectStyle}
-      >
-        {MONTH_NAMES.map((name, i) => (
-          <option key={i + 1} value={i + 1}>{name}</option>
-        ))}
-      </select>
-      <select
-        value={selYear}
-        onChange={(e) => onChange(`${e.target.value}-${String(selMonth).padStart(2, "0")}`)}
-        style={selectStyle}
-      >
-        {years.map((y) => (
-          <option key={y} value={y}>{y}</option>
-        ))}
-      </select>
-    </div>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={selectStyle}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
+    </select>
   );
 }
 
@@ -643,11 +823,7 @@ function PnLSkeleton() {
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 export default function PnLPage() {
-  const [filterMode, setFilterMode] = useState<FilterMode>("month");
   const [selectedMonth, setSelectedMonth] = useState(currentMonthValue);
-  const [customFrom, setCustomFrom] = useState("");
-  const [customTo, setCustomTo] = useState("");
-  const [channel, setChannel] = useState<Channel>("ALL");
 
   const [data, setData] = useState<PnLResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -656,19 +832,11 @@ export default function PnLPage() {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    if (filterMode === "custom" && (!customFrom || !customTo)) return;
-
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
-    const params = new URLSearchParams({ channel });
-    if (filterMode === "month") {
-      params.set("month", selectedMonth);
-    } else {
-      params.set("date_from", customFrom);
-      params.set("date_to", customTo);
-    }
+    const params = new URLSearchParams({ month: selectedMonth });
 
     setLoading(true);
     setError(null);
@@ -691,24 +859,7 @@ export default function PnLPage() {
       });
 
     return () => ctrl.abort();
-  }, [filterMode, selectedMonth, customFrom, customTo, channel]);
-
-  const CHANNELS: Channel[] = ["ALL", "Shopify", "Amazon", "Offline"];
-
-  function pillStyle(active: boolean) {
-    return active
-      ? {
-          backgroundColor: "#d57282",
-          color: "#ffffff",
-          border: "1px solid #d57282",
-          boxShadow: "0 2px 8px rgba(213,114,130,0.28)",
-        }
-      : {
-          backgroundColor: "#ffffff",
-          color: "#525252",
-          border: "1px solid #E2E2E2",
-        };
-  }
+  }, [selectedMonth]);
 
   return (
     <div className="space-y-5">
@@ -727,84 +878,7 @@ export default function PnLPage() {
 
       {/* Filter bar */}
       <div className="flex flex-wrap gap-3 items-center">
-        {/* Mode toggle */}
-        <div
-          className="flex rounded-xl overflow-hidden"
-          style={{ border: "1px solid #E2E2E2", backgroundColor: "#ffffff" }}
-        >
-          {(["month", "custom"] as FilterMode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setFilterMode(m)}
-              className="px-4 py-2 text-sm font-medium transition-all"
-              style={
-                filterMode === m
-                  ? { backgroundColor: "#d57282", color: "#ffffff" }
-                  : { backgroundColor: "transparent", color: "#525252" }
-              }
-            >
-              {m === "month" ? "Month" : "Custom Range"}
-            </button>
-          ))}
-        </div>
-
-        {/* Date selector */}
-        {filterMode === "month" ? (
-          <MonthYearPicker value={selectedMonth} onChange={setSelectedMonth} />
-        ) : (
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={customFrom}
-              onChange={(e) => setCustomFrom(e.target.value)}
-              className="px-3 py-2 text-sm outline-none"
-              style={{
-                borderRadius: 12,
-                border: "1px solid #E2E2E2",
-                color: "#525252",
-                backgroundColor: "#ffffff",
-              }}
-            />
-            <span className="text-xs" style={{ color: "#8a8a8a" }}>to</span>
-            <input
-              type="date"
-              value={customTo}
-              onChange={(e) => setCustomTo(e.target.value)}
-              className="px-3 py-2 text-sm outline-none"
-              style={{
-                borderRadius: 12,
-                border: "1px solid #E2E2E2",
-                color: "#525252",
-                backgroundColor: "#ffffff",
-              }}
-            />
-          </div>
-        )}
-
-        {/* Channel filter */}
-        <div className="flex items-center gap-1">
-          {CHANNELS.map((c) => (
-            <button
-              key={c}
-              onClick={() => setChannel(c)}
-              className="px-3 py-1.5 text-xs font-medium transition-all"
-              style={{ borderRadius: 22, ...pillStyle(channel === c) }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-
-        {/* Expenses global note */}
-        {channel !== "ALL" && (
-          <p className="text-xs w-full" style={{ color: "#8a8a8a" }}>
-            <Info
-              size={11}
-              style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }}
-            />
-            Expenses are global and not filtered by channel.
-          </p>
-        )}
+        <MonthYearPicker value={selectedMonth} onChange={setSelectedMonth} />
       </div>
 
       {/* Content */}
