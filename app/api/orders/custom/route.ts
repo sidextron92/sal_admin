@@ -23,6 +23,7 @@ interface RequestBody {
   channel: 'Offline' | 'Amazon'
   amazon_order_id?: string
   order_name: string
+  order_date: string
   customer_name: string
   customer_phone: string
   customer_email?: string
@@ -52,6 +53,9 @@ export async function POST(req: NextRequest) {
   // --- Validation ---
   if (!body.order_name?.trim()) {
     return NextResponse.json({ error: 'order_name is required' }, { status: 400 })
+  }
+  if (!body.order_date?.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(body.order_date.trim())) {
+    return NextResponse.json({ error: 'order_date must be a valid date (YYYY-MM-DD)' }, { status: 400 })
   }
   if (!body.customer_name?.trim()) {
     return NextResponse.json({ error: 'customer_name is required' }, { status: 400 })
@@ -118,12 +122,13 @@ export async function POST(req: NextRequest) {
 
     // --- Insert Order ---
     const now = new Date().toISOString()
+    const orderDateISO = `${body.order_date.trim()}T00:00:00.000Z`
 
     const orderRow = {
       order_id,
       order_name,
-      created_at: now,
-      updated_at: now,
+      created_at: orderDateISO,
+      updated_at: orderDateISO,
       customer_id: null,
       total_price,
       subtotal_price,

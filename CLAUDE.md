@@ -130,6 +130,7 @@ Creates a manual order (Offline or Amazon channel) — inserts into `orders` + `
   channel: 'Offline' | 'Amazon'
   amazon_order_id?: string        // required if channel = Amazon
   order_name: string              // e.g. "M-001" or "#M-001" — # auto-prepended
+  order_date: string              // YYYY-MM-DD — sets created_at/updated_at (time = 00:00:00 UTC)
   customer_name: string
   customer_phone: string
   customer_email?: string
@@ -161,7 +162,7 @@ Creates a manual order (Offline or Amazon channel) — inserts into `orders` + `
 - `total_price = subtotal + shipping_charges`
 
 **`orders` fields set:**
-`financial_status` → `PAID` (Prepaid) / `PENDING` (COD) · `sr_status` → `NEW` · `sales_channel` → channel value · `confirmed` → `true` · `currency` → `INR` · `total_tax` → `0`
+`created_at` / `updated_at` → derived from `order_date` (time = 00:00:00 UTC) · `financial_status` → `PAID` (Prepaid) / `PENDING` (COD) · `sr_status` → `NEW` · `sales_channel` → channel value · `confirmed` → `true` · `currency` → `INR` · `total_tax` → `0`
 
 **Inventory deduction:** drains `physical_inventory` first, spills to `virtual_inventory`. Sets `inventory_changed_by: 'order'`, `inventory_remark: 'Order {id}'`. Warns (non-blocking) if qty > available stock. After DB update, pushes new totals to Shopify via `inventorySetQuantities` (non-fatal on failure).
 

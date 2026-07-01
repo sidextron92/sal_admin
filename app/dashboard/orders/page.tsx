@@ -829,6 +829,10 @@ function AddCustomOrderModal({
 }) {
   // Order info
   const [orderName, setOrderName] = useState("");
+  const [orderDate, setOrderDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().slice(0, 10); // YYYY-MM-DD
+  });
   const [amazonOrderId, setAmazonOrderId] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -955,6 +959,7 @@ function AddCustomOrderModal({
           amazon_order_id:
             channel === "Amazon" ? amazonOrderId : undefined,
           order_name: orderName,
+          order_date: orderDate,
           customer_name: customerName,
           customer_phone: customerPhone,
           customer_email: customerEmail || undefined,
@@ -1081,6 +1086,23 @@ function AddCustomOrderModal({
                     value={orderName}
                     onChange={(e) => setOrderName(e.target.value)}
                     placeholder="#1001"
+                    className="w-full text-sm rounded-xl px-3 py-2.5 outline-none placeholder:text-[#c0b8b8]"
+                    style={inputStyle}
+                  />
+                </div>
+
+                {/* Order Date */}
+                <div>
+                  <label
+                    className="block text-xs font-medium mb-1.5"
+                    style={{ color: "#525252" }}
+                  >
+                    Order Date<span style={{ color: "#e05252" }}>*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={orderDate}
+                    onChange={(e) => setOrderDate(e.target.value)}
                     className="w-full text-sm rounded-xl px-3 py-2.5 outline-none placeholder:text-[#c0b8b8]"
                     style={inputStyle}
                   />
