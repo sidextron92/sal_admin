@@ -297,7 +297,7 @@ function MultiSelect({
           className="absolute z-10 mt-1 w-64 rounded-xl overflow-hidden"
           style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}
         >
-          <div className="px-2 pt-2 pb-1" style={{ borderBottom: "1px solid #f0eae6" }}>
+          <div className="px-2 pt-2 pb-1" style={{ borderBottom: "1px solid #F0EBE0" }}>
             <div className="relative">
               <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#b0a8a8" }} />
               <input
@@ -306,14 +306,14 @@ function MultiSelect({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search categories…"
-                className="w-full text-xs rounded-lg pl-7 pr-2 py-1.5 outline-none placeholder:text-[#c0b8b8]"
-                style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#faf7f5" }}
+                className="w-full text-xs rounded-lg pl-7 pr-2 py-1.5 outline-none placeholder:text-[#C0B0A0]"
+                style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#FFF8ED" }}
               />
             </div>
           </div>
           <div className="max-h-52 overflow-auto py-1">
           {filtered.length > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1" style={{ borderBottom: "1px solid #f0eae6" }}>
+            <div className="flex items-center gap-2 px-3 py-1" style={{ borderBottom: "1px solid #F0EBE0" }}>
               {(() => {
                 const allSelected = filtered.every((o) => selected.has(o));
                 return (
@@ -325,7 +325,7 @@ function MultiSelect({
                       onChange(next);
                     }}
                     className="text-xs font-medium hover:underline"
-                    style={{ color: "#d57282" }}
+                    style={{ color: "#FFC533" }}
                   >
                     {allSelected ? "Deselect all" : "Select all"}{query ? " matches" : ""}
                   </button>
@@ -354,7 +354,7 @@ function MultiSelect({
                 type="checkbox"
                 checked={selected.has(o)}
                 onChange={() => toggle(o)}
-                className="accent-[#d57282] rounded"
+                className="accent-[#FFC533] rounded"
               />
               {o}
             </label>
@@ -411,7 +411,7 @@ function AnalysisModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-5 sm:px-6 py-4" style={{ borderBottom: "1px solid #f0eae6" }}>
+        <div className="px-5 sm:px-6 py-4" style={{ borderBottom: "1px solid #F0EBE0" }}>
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold" style={{ color: "#525252" }}>Price Analysis</h2>
@@ -446,7 +446,7 @@ function AnalysisModal({
         <div className="flex-1 overflow-auto">
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 size={22} className="animate-spin" style={{ color: "#d57282" }} />
+              <Loader2 size={22} className="animate-spin" style={{ color: "#FFC533" }} />
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex items-center justify-center py-20">
@@ -454,8 +454,8 @@ function AnalysisModal({
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="sticky top-0" style={{ backgroundColor: "#faf7f5" }}>
-                <tr style={{ borderBottom: "1px solid #f0eae6" }}>
+              <thead className="sticky top-0" style={{ backgroundColor: "#FFF8ED" }}>
+                <tr style={{ borderBottom: "1px solid #F0EBE0" }}>
                   {["Brand", "Category", "Variants", "Min Price", "Median Price", "Max Price"].map((h) => (
                     <th
                       key={h}
@@ -484,13 +484,13 @@ function AnalysisModal({
                   <tr
                     key={`${r.company_name}-${r.product_type}-${i}`}
                     style={{ borderBottom: "1px solid #f5f5f5" }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#fffbf6")}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#FFFBF1")}
                     onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "")}
                   >
                     <td className="px-4 py-2.5">
                       <span
                         className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
-                        style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                        style={{ backgroundColor: "#FFEDAB", color: "#FFC533" }}
                       >
                         {r.company_name}
                       </span>
@@ -498,7 +498,7 @@ function AnalysisModal({
                     <td className="px-4 py-2.5" style={{ color: "#525252" }}>{r.product_type || "—"}</td>
                     <td className="px-4 py-2.5 font-medium" style={{ color: "#525252" }}>{r.variants}</td>
                     <td className="px-4 py-2.5" style={{ color: "#525252" }}>{formatINR(r.min_price)}</td>
-                    <td className="px-4 py-2.5 font-semibold" style={{ color: "#d57282" }}>{formatINR(r.median_price)}</td>
+                    <td className="px-4 py-2.5 font-semibold" style={{ color: "#FFC533" }}>{formatINR(r.median_price)}</td>
                     <td className="px-4 py-2.5" style={{ color: "#525252" }}>{formatINR(r.max_price)}</td>
                   </tr>
                 ))}
@@ -632,12 +632,12 @@ export default function CompetitionProductsPage() {
           onClick={openAnalysis}
           className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
           style={{
-            backgroundColor: "#d57282",
-            color: "#ffffff",
-            boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
+            backgroundColor: "#FFC533",
+            color: "#222222",
+            boxShadow: "0 4px 14px rgba(255,197,51,0.28)",
           }}
-          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#ce5a56")}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#d57282")}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#E5A800")}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#FFC533")}
         >
           <BarChart2 size={15} />
           Analysis
@@ -647,7 +647,7 @@ export default function CompetitionProductsPage() {
       {/* Filter bar */}
       <div
         className="rounded-2xl px-5 py-4"
-        style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2", boxShadow: "0 2px 16px rgba(213,114,130,0.07)" }}
+        style={{ backgroundColor: "#ffffff", border: "1px solid #E2E2E2", boxShadow: "0 2px 16px rgba(255,197,51,0.07)" }}
       >
         <div className="flex flex-wrap gap-3 items-center">
           {/* Search */}
@@ -658,7 +658,7 @@ export default function CompetitionProductsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search product, variant, tag, SKU…"
-              className="w-full text-sm rounded-xl pl-9 pr-3 py-2 outline-none placeholder:text-[#c0b8b8]"
+              className="w-full text-sm rounded-xl pl-9 pr-3 py-2 outline-none placeholder:text-[#C0B0A0]"
               style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#ffffff" }}
             />
           </div>
@@ -695,16 +695,16 @@ export default function CompetitionProductsPage() {
               value={priceMin}
               onChange={(e) => setPriceMin(e.target.value)}
               placeholder="Min ₹"
-              className="w-24 text-sm rounded-xl px-3 py-2 outline-none placeholder:text-[#c0b8b8]"
+              className="w-24 text-sm rounded-xl px-3 py-2 outline-none placeholder:text-[#C0B0A0]"
               style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#ffffff" }}
             />
-            <span style={{ color: "#c0b8b8", fontSize: 12 }}>–</span>
+            <span style={{ color: "#C0B0A0", fontSize: 12 }}>–</span>
             <input
               type="number"
               value={priceMax}
               onChange={(e) => setPriceMax(e.target.value)}
               placeholder="Max ₹"
-              className="w-24 text-sm rounded-xl px-3 py-2 outline-none placeholder:text-[#c0b8b8]"
+              className="w-24 text-sm rounded-xl px-3 py-2 outline-none placeholder:text-[#C0B0A0]"
               style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#ffffff" }}
             />
           </div>
@@ -713,7 +713,7 @@ export default function CompetitionProductsPage() {
             <button
               onClick={handleReset}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-[#f5f0ed]"
-              style={{ color: "#d57282" }}
+              style={{ color: "#FFC533" }}
             >
               <X size={13} /> Reset
             </button>
@@ -724,16 +724,16 @@ export default function CompetitionProductsPage() {
       {/* Table card */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ backgroundColor: "#ffffff", boxShadow: "0 2px 16px rgba(213,114,130,0.07)", border: "1px solid #E2E2E2" }}
+        style={{ backgroundColor: "#ffffff", boxShadow: "0 2px 16px rgba(255,197,51,0.07)", border: "1px solid #E2E2E2" }}
       >
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={22} className="animate-spin" style={{ color: "#d57282" }} />
+            <Loader2 size={22} className="animate-spin" style={{ color: "#FFC533" }} />
           </div>
         ) : products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "#f9e8eb" }}>
-              <BarChart2 size={20} style={{ color: "#d57282" }} />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "#FFEDAB" }}>
+              <BarChart2 size={20} style={{ color: "#FFC533" }} />
             </div>
             <p className="text-sm font-medium" style={{ color: "#525252" }}>No products found</p>
             <p className="text-xs" style={{ color: "#8a8a8a" }}>Try adjusting your filters or scrape data from Competition Brands</p>
@@ -744,7 +744,7 @@ export default function CompetitionProductsPage() {
             <div style={{ minWidth: "700px" }}>
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ borderBottom: "1px solid #f0eae6" }}>
+                <tr style={{ borderBottom: "1px solid #F0EBE0" }}>
                   {[
                     { label: "Product",  cls: "" },
                     { label: "Brand / Category", cls: "w-40" },
@@ -763,7 +763,7 @@ export default function CompetitionProductsPage() {
                   <tr
                     key={p.id}
                     style={{ borderBottom: "1px solid #f5f5f5" }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#fffbf6")}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "#FFFBF1")}
                     onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.backgroundColor = "")}
                   >
                     {/* Product column */}
@@ -785,7 +785,7 @@ export default function CompetitionProductsPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <BarChart2 size={14} style={{ color: "#c0b8b8" }} />
+                              <BarChart2 size={14} style={{ color: "#C0B0A0" }} />
                             </div>
                           )}
                         </div>
@@ -823,7 +823,7 @@ export default function CompetitionProductsPage() {
                       <div className="flex flex-col gap-1.5">
                         <span
                           className="text-xs font-medium px-2 py-0.5 rounded-full w-fit whitespace-nowrap"
-                          style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                          style={{ backgroundColor: "#FFEDAB", color: "#FFC533" }}
                         >
                           {p.company_name}
                         </span>
@@ -863,7 +863,7 @@ export default function CompetitionProductsPage() {
                         </span>
                       )}
                       {p.available == null && (
-                        <span style={{ color: "#c0b8b8" }}>—</span>
+                        <span style={{ color: "#C0B0A0" }}>—</span>
                       )}
                     </td>
 
@@ -893,7 +893,7 @@ export default function CompetitionProductsPage() {
             {totalPages > 1 && (
               <div
                 className="flex items-center justify-between px-5 py-3"
-                style={{ borderTop: "1px solid #f0eae6" }}
+                style={{ borderTop: "1px solid #F0EBE0" }}
               >
                 <p className="text-xs" style={{ color: "#8a8a8a" }}>
                   Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, total)} of {total.toLocaleString()}

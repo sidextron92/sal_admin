@@ -37,7 +37,7 @@ function CustomTooltip({ active, payload, label }: any) {
       }}
     >
       <p className="font-semibold mb-1" style={{ color: "#525252" }}>{label}</p>
-      <p style={{ color: "#d57282" }}>
+      <p style={{ color: "#FFC533" }}>
         {formatCurrency(gmv)}
       </p>
       <p style={{ color: "#8a8a8a" }}>{order_count} orders</p>
@@ -53,10 +53,10 @@ export default function OverviewCharts({ chartData }: OverviewChartsProps) {
   return (
     <div
       className="bg-white rounded-2xl p-5 border"
-      style={{ borderColor: "#E2E2E2", boxShadow: "0 2px 16px rgba(213, 114, 130, 0.07)" }}
+      style={{ borderColor: "#E2E2E2", boxShadow: "0 2px 16px rgba(255, 197, 51, 0.07)" }}
     >
       <div className="flex items-center gap-2 mb-5">
-        <div style={{ width: 3, height: 14, backgroundColor: "#d57282", borderRadius: 2, flexShrink: 0 }} />
+        <div style={{ width: 3, height: 14, backgroundColor: "#FFC533", borderRadius: 2, flexShrink: 0 }} />
         <p className="text-sm font-semibold" style={{ color: "#525252" }}>
           Orders · Last 7 Days
         </p>
@@ -81,8 +81,8 @@ export default function OverviewCharts({ chartData }: OverviewChartsProps) {
             tickFormatter={formatCurrency}
             width={42}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f9e8eb" }} />
-          <Bar dataKey="gmv" fill="#d57282" radius={[6, 6, 0, 0]} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "#FFEDAB" }} />
+          <Bar dataKey="gmv" fill="#FFC533" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

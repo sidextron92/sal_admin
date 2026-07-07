@@ -441,7 +441,7 @@ function PnLWaterfallTable({ data }: { data: PnLResponse }) {
       {/* Table header */}
       <div
         className="flex items-center justify-between px-5 py-3"
-        style={{ borderBottom: "1px solid #f0eae6", backgroundColor: "#faf7f5" }}
+        style={{ borderBottom: "1px solid #F0EBE0", backgroundColor: "#FFF8ED" }}
       >
         <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8a8a8a" }}>
           P&amp;L Statement
@@ -461,7 +461,7 @@ function PnLWaterfallTable({ data }: { data: PnLResponse }) {
           return (
             <div
               key={i}
-              style={{ height: 1, backgroundColor: "#f0eae6", margin: "2px 0" }}
+              style={{ height: 1, backgroundColor: "#F0EBE0", margin: "2px 0" }}
             />
           );
         }
@@ -527,7 +527,7 @@ function PnLWaterfallTable({ data }: { data: PnLResponse }) {
                 >
                   <Info
                     size={11}
-                    style={{ color: activeInfo === i ? "#d57282" : "#c0b8b8" }}
+                    style={{ color: activeInfo === i ? "#FFC533" : "#c0b8b8" }}
                   />
                 </button>
               )}
@@ -588,7 +588,7 @@ function RtoStatsCard({ rto }: { rto: PnLRto }) {
       }}
     >
       <div className="flex items-center gap-2 mb-3">
-        <div style={{ width: 3, height: 14, backgroundColor: "#d57282", borderRadius: 2, flexShrink: 0 }} />
+        <div style={{ width: 3, height: 14, backgroundColor: "#FFC533", borderRadius: 2, flexShrink: 0 }} />
         <p className="text-sm font-semibold" style={{ color: "#525252" }}>
           RTO Stats
         </p>
@@ -667,7 +667,7 @@ function TrendTooltip({ active, payload, label }: {
 }
 
 const TREND_SERIES = [
-  { key: "net_revenue", name: "Net Revenue", color: "#d57282" },
+  { key: "net_revenue", name: "Net Revenue", color: "#FFC533" },
   { key: "cm1",         name: "CM1",         color: "#27a559" },
   { key: "cm2",         name: "CM2",         color: "#4a9fde" },
   { key: "cm3",         name: "CM3",         color: "#f0a64e" },
@@ -706,7 +706,7 @@ function PnLTrendChart({ trend }: { trend: TrendMonth[] }) {
       }}
     >
       <div className="flex items-center gap-2 mb-4">
-        <div style={{ width: 3, height: 14, backgroundColor: "#d57282", borderRadius: 2, flexShrink: 0 }} />
+        <div style={{ width: 3, height: 14, backgroundColor: "#FFC533", borderRadius: 2, flexShrink: 0 }} />
         <p className="text-sm font-semibold" style={{ color: "#525252" }}>
           Margin Trend · Last 12 Months
         </p>
@@ -731,7 +731,7 @@ function PnLTrendChart({ trend }: { trend: TrendMonth[] }) {
           {hasNegative && (
             <ReferenceLine y={0} stroke="#c0b8b8" strokeWidth={1} />
           )}
-          <Tooltip content={<TrendTooltip />} cursor={{ fill: "#f9e8eb", opacity: 0.3 }} />
+          <Tooltip content={<TrendTooltip />} cursor={{ fill: "#FFEDAB", opacity: 0.3 }} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
           {TREND_SERIES.map((s) => (
             <Bar
@@ -806,14 +806,14 @@ function PnLSkeleton() {
     <div className="space-y-5 animate-pulse">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="rounded-2xl h-24" style={{ backgroundColor: "#f0eae6" }} />
+          <div key={i} className="rounded-2xl h-24" style={{ backgroundColor: "#F0EBE0" }} />
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 rounded-2xl h-96" style={{ backgroundColor: "#f0eae6" }} />
+        <div className="lg:col-span-2 rounded-2xl h-96" style={{ backgroundColor: "#F0EBE0" }} />
         <div className="space-y-5">
-          <div className="rounded-2xl h-32" style={{ backgroundColor: "#f0eae6" }} />
-          <div className="rounded-2xl h-56" style={{ backgroundColor: "#f0eae6" }} />
+          <div className="rounded-2xl h-32" style={{ backgroundColor: "#F0EBE0" }} />
+          <div className="rounded-2xl h-56" style={{ backgroundColor: "#F0EBE0" }} />
         </div>
       </div>
     </div>
@@ -937,7 +937,7 @@ export default function PnLPage() {
           {/* Footnote */}
           <div
             className="flex items-start gap-2 px-4 py-3 rounded-xl"
-            style={{ backgroundColor: "#faf7f5", border: "1px solid #f0eae6" }}
+            style={{ backgroundColor: "#FFF8ED", border: "1px solid #F0EBE0" }}
           >
             <TrendingUp size={13} style={{ color: "#8a8a8a", marginTop: 1, flexShrink: 0 }} />
             <p className="text-xs leading-relaxed" style={{ color: "#8a8a8a" }}>

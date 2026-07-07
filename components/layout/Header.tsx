@@ -19,12 +19,12 @@ export default function Header({ title, onMobileMenuOpen }: HeaderProps) {
   return (
     <header
       className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 md:px-6 bg-white shrink-0"
-      style={{ boxShadow: "0 1px 0 #E2E2E2, 0 2px 8px rgba(213, 114, 130, 0.04)" }}
+      style={{ boxShadow: "0 1px 0 #E2E2E2, 0 2px 8px rgba(255, 197, 51, 0.04)" }}
     >
       <div className="flex items-center gap-3">
         {/* Mobile hamburger */}
         <button
-          className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-[#f9e8eb]"
+          className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-[#FFEDAB]"
           style={{ color: "#8a8a8a" }}
           onClick={onMobileMenuOpen}
           aria-label="Open menu"
@@ -42,8 +42,8 @@ export default function Header({ title, onMobileMenuOpen }: HeaderProps) {
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0"
           style={{
-            backgroundColor: "#d57282",
-            boxShadow: "0 0 0 2px #fff, 0 0 0 3.5px rgba(213, 114, 130, 0.3)",
+            backgroundColor: "#FFC533",
+            boxShadow: "0 0 0 2px #fff, 0 0 0 3.5px rgba(255, 197, 51, 0.3)",
           }}
         >
           F
@@ -52,7 +52,7 @@ export default function Header({ title, onMobileMenuOpen }: HeaderProps) {
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-xl transition-colors hover:bg-[#f9e8eb]"
+          className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-xl transition-colors hover:bg-[#FFEDAB]"
           style={{ color: "#8a8a8a" }}
         >
           <LogOut size={14} />

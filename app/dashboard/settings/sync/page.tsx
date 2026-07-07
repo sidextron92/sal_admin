@@ -161,7 +161,7 @@ export default function SyncPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ backgroundColor: "#f0eae6" }}>
+      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ backgroundColor: "#F0EBE0" }}>
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -171,8 +171,8 @@ export default function SyncPage() {
               activeTab === tab
                 ? {
                     backgroundColor: "#ffffff",
-                    color: "#d57282",
-                    boxShadow: "0 1px 4px rgba(213,114,130,0.12)",
+                    color: "#FFC533",
+                    boxShadow: "0 1px 4px rgba(255,197,51,0.12)",
                   }
                 : { color: "#8a8a8a" }
             }
@@ -190,7 +190,7 @@ export default function SyncPage() {
             className="rounded-2xl p-5"
             style={{
               backgroundColor: "#ffffff",
-              boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
+              boxShadow: "0 2px 16px rgba(255,197,51,0.07)",
               border: "1px solid #E2E2E2",
             }}
           >
@@ -198,9 +198,9 @@ export default function SyncPage() {
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "#f9e8eb" }}
+                  style={{ backgroundColor: "#FFEDAB" }}
                 >
-                  <ShoppingBag size={18} style={{ color: "#d57282" }} />
+                  <ShoppingBag size={18} style={{ color: "#FFC533" }} />
                 </div>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: "#525252" }}>
@@ -234,7 +234,7 @@ export default function SyncPage() {
             {lastSync && (
               <div
                 className="flex gap-4 mt-4 pt-4 text-xs"
-                style={{ borderTop: "1px solid #f0eae6", color: "#8a8a8a" }}
+                style={{ borderTop: "1px solid #F0EBE0", color: "#8a8a8a" }}
               >
                 <div className="flex items-center gap-1.5">
                   <Clock size={12} />
@@ -257,9 +257,9 @@ export default function SyncPage() {
                 disabled={syncing}
                 className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all duration-150 disabled:opacity-60"
                 style={{
-                  backgroundColor: "#d57282",
-                  color: "#ffffff",
-                  boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
+                  backgroundColor: "#FFC533",
+                  color: "#222222",
+                  boxShadow: "0 4px 14px rgba(255,197,51,0.28)",
                 }}
               >
                 {syncing ? (
@@ -296,7 +296,7 @@ export default function SyncPage() {
             className="rounded-2xl p-5"
             style={{
               backgroundColor: "#ffffff",
-              boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
+              boxShadow: "0 2px 16px rgba(255,197,51,0.07)",
               border: "1px solid #E2E2E2",
             }}
           >
@@ -304,9 +304,9 @@ export default function SyncPage() {
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "#f9e8eb" }}
+                  style={{ backgroundColor: "#FFEDAB" }}
                 >
-                  <Truck size={18} style={{ color: "#d57282" }} />
+                  <Truck size={18} style={{ color: "#FFC533" }} />
                 </div>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: "#525252" }}>
@@ -348,7 +348,7 @@ export default function SyncPage() {
             {lastSrSync && (
               <div
                 className="flex gap-4 mt-4 pt-4 text-xs"
-                style={{ borderTop: "1px solid #f0eae6", color: "#8a8a8a" }}
+                style={{ borderTop: "1px solid #F0EBE0", color: "#8a8a8a" }}
               >
                 <div className="flex items-center gap-1.5">
                   <Clock size={12} />
@@ -371,9 +371,9 @@ export default function SyncPage() {
                 disabled={srSyncing}
                 className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all duration-150 disabled:opacity-60"
                 style={{
-                  backgroundColor: "#d57282",
-                  color: "#ffffff",
-                  boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
+                  backgroundColor: "#FFC533",
+                  color: "#222222",
+                  boxShadow: "0 4px 14px rgba(255,197,51,0.28)",
                 }}
               >
                 {srSyncing ? (
@@ -410,7 +410,7 @@ export default function SyncPage() {
             className="rounded-2xl p-5"
             style={{
               backgroundColor: "#ffffff",
-              boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
+              boxShadow: "0 2px 16px rgba(255,197,51,0.07)",
               border: "1px solid #E2E2E2",
             }}
           >
@@ -418,9 +418,9 @@ export default function SyncPage() {
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "#f9e8eb" }}
+                  style={{ backgroundColor: "#FFEDAB" }}
                 >
-                  <Package size={18} style={{ color: "#d57282" }} />
+                  <Package size={18} style={{ color: "#FFC533" }} />
                 </div>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: "#525252" }}>
@@ -462,7 +462,7 @@ export default function SyncPage() {
             {lastProdSync && (
               <div
                 className="flex gap-4 mt-4 pt-4 text-xs"
-                style={{ borderTop: "1px solid #f0eae6", color: "#8a8a8a" }}
+                style={{ borderTop: "1px solid #F0EBE0", color: "#8a8a8a" }}
               >
                 <div className="flex items-center gap-1.5">
                   <Clock size={12} />
@@ -485,9 +485,9 @@ export default function SyncPage() {
                 disabled={prodSyncing}
                 className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all duration-150 disabled:opacity-60"
                 style={{
-                  backgroundColor: "#d57282",
-                  color: "#ffffff",
-                  boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
+                  backgroundColor: "#FFC533",
+                  color: "#222222",
+                  boxShadow: "0 4px 14px rgba(255,197,51,0.28)",
                 }}
               >
                 {prodSyncing ? (
@@ -525,13 +525,13 @@ export default function SyncPage() {
               className="rounded-2xl overflow-hidden"
               style={{
                 backgroundColor: "#ffffff",
-                boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
+                boxShadow: "0 2px 16px rgba(255,197,51,0.07)",
                 border: "1px solid #E2E2E2",
               }}
             >
               <div
                 className="px-5 py-3.5"
-                style={{ borderBottom: "1px solid #f0eae6" }}
+                style={{ borderBottom: "1px solid #F0EBE0" }}
               >
                 <p className="text-sm font-semibold" style={{ color: "#525252" }}>
                   Sync History
@@ -541,7 +541,7 @@ export default function SyncPage() {
                 className="grid text-xs font-semibold uppercase tracking-wide px-5 py-2"
                 style={{
                   gridTemplateColumns: "100px 90px 1fr 80px 60px",
-                  borderBottom: "1px solid #f0eae6",
+                  borderBottom: "1px solid #F0EBE0",
                   color: "#8a8a8a",
                 }}
               >
@@ -551,7 +551,7 @@ export default function SyncPage() {
                 <span>Records</span>
                 <span>Duration</span>
               </div>
-              <div className="divide-y" style={{ borderColor: "#f0eae6" }}>
+              <div className="divide-y" style={{ borderColor: "#F0EBE0" }}>
                 {allLogs.map((log) => (
                   <div
                     key={log.id}
@@ -567,7 +567,7 @@ export default function SyncPage() {
                         style={
                           log.platform === "shopify"
                             ? { backgroundColor: "#f0faf4", color: "#27a559" }
-                            : { backgroundColor: "#f9e8eb", color: "#d57282" }
+                            : { backgroundColor: "#FFEDAB", color: "#FFC533" }
                         }
                       >
                         {log.platform ?? "—"}
@@ -592,7 +592,7 @@ export default function SyncPage() {
                           : `${log.orders_upserted ?? 0} / ${log.items_upserted ?? 0}`
                         : "—"}
                     </span>
-                    <span className="font-medium tabular-nums" style={{ color: "#b8a0a0" }}>
+                    <span className="font-medium tabular-nums" style={{ color: "#B8A090" }}>
                       {formatDuration(log.duration_ms)}
                     </span>
                   </div>
@@ -609,14 +609,14 @@ export default function SyncPage() {
           {/* Info banner */}
           <div
             className="rounded-2xl px-5 py-4 flex items-start gap-3"
-            style={{ backgroundColor: "#f9e8eb", border: "1px solid #f0d0d6" }}
+            style={{ backgroundColor: "#FFEDAB", border: "1px solid #F0D8C0" }}
           >
-            <CalendarClock size={16} style={{ color: "#d57282", marginTop: 1, flexShrink: 0 }} />
+            <CalendarClock size={16} style={{ color: "#FFC533", marginTop: 1, flexShrink: 0 }} />
             <div>
-              <p className="text-xs font-semibold" style={{ color: "#d57282" }}>
+              <p className="text-xs font-semibold" style={{ color: "#FFC533" }}>
                 Powered by GitHub Actions
               </p>
-              <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "#b86070" }}>
+              <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "#B8935A" }}>
                 Syncs run automatically via the workflow at{" "}
                 <code className="font-mono bg-white/60 px-1 rounded">.github/workflows/sync.yml</code>.
                 Add <code className="font-mono bg-white/60 px-1 rounded">APP_URL</code> and{" "}
@@ -629,19 +629,19 @@ export default function SyncPage() {
           {/* Job cards */}
           {[
             {
-              icon: <ShoppingBag size={18} style={{ color: "#d57282" }} />,
+              icon: <ShoppingBag size={18} style={{ color: "#FFC533" }} />,
               name: "Shopify Orders",
               description: "Orders + line items · Latest 250",
               endpoint: "/api/cron/sync?type=shopify-orders",
             },
             {
-              icon: <Package size={18} style={{ color: "#d57282" }} />,
+              icon: <Package size={18} style={{ color: "#FFC533" }} />,
               name: "Shopify Products",
               description: "Full catalog · Variants · Stock levels",
               endpoint: "/api/cron/sync?type=shopify-products",
             },
             {
-              icon: <Truck size={18} style={{ color: "#d57282" }} />,
+              icon: <Truck size={18} style={{ color: "#FFC533" }} />,
               name: "Shiprocket",
               description: "Customer details · AWB · Shipment status",
               endpoint: "/api/cron/sync?type=shiprocket",
@@ -652,14 +652,14 @@ export default function SyncPage() {
               className="rounded-2xl p-5"
               style={{
                 backgroundColor: "#ffffff",
-                boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
+                boxShadow: "0 2px 16px rgba(255,197,51,0.07)",
                 border: "1px solid #E2E2E2",
               }}
             >
               <div className="flex items-center gap-3 mb-4">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "#f9e8eb" }}
+                  style={{ backgroundColor: "#FFEDAB" }}
                 >
                   {job.icon}
                 </div>
@@ -682,7 +682,7 @@ export default function SyncPage() {
 
               <div
                 className="rounded-xl p-4 space-y-3"
-                style={{ backgroundColor: "#faf7f5", border: "1px solid #f0eae6" }}
+                style={{ backgroundColor: "#FFF8ED", border: "1px solid #F0EBE0" }}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium" style={{ color: "#8a8a8a" }}>
@@ -691,7 +691,7 @@ export default function SyncPage() {
                   <div className="flex items-center gap-2">
                     <span
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                      style={{ backgroundColor: "#FFEDAB", color: "#FFC533" }}
                     >
                       Every 2 hours
                     </span>
@@ -707,7 +707,7 @@ export default function SyncPage() {
                   <div className="flex items-center gap-2">
                     <span
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: "#f0eae6", color: "#8a8a8a" }}
+                      style={{ backgroundColor: "#F0EBE0", color: "#8a8a8a" }}
                     >
                       Every 4 hours
                     </span>
@@ -718,7 +718,7 @@ export default function SyncPage() {
                 </div>
                 <div
                   className="pt-3 flex items-center justify-between"
-                  style={{ borderTop: "1px solid #f0eae6" }}
+                  style={{ borderTop: "1px solid #F0EBE0" }}
                 >
                   <span className="text-xs font-medium" style={{ color: "#8a8a8a" }}>
                     Runs per day
@@ -747,7 +747,7 @@ export default function SyncPage() {
             className="rounded-2xl p-5"
             style={{
               backgroundColor: "#ffffff",
-              boxShadow: "0 2px 16px rgba(213,114,130,0.07)",
+              boxShadow: "0 2px 16px rgba(255,197,51,0.07)",
               border: "1px solid #E2E2E2",
             }}
           >
@@ -776,7 +776,7 @@ export default function SyncPage() {
                 <div key={i} className="flex items-start gap-3">
                   <div
                     className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-xs font-semibold"
-                    style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                    style={{ backgroundColor: "#FFEDAB", color: "#FFC533" }}
                   >
                     {i + 1}
                   </div>

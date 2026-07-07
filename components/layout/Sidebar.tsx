@@ -117,14 +117,14 @@ export default function Sidebar({
     <div
       className="flex flex-col h-full"
       style={{
-        backgroundColor: "#faf7f5",
+        backgroundColor: "#FFF8ED",
         borderRight: "1px solid #E2E2E2",
       }}
     >
       {/* Logo */}
       <div
         className="flex items-center justify-between px-4 h-16 shrink-0"
-        style={{ borderBottom: "1px solid #ede8e3" }}
+        style={{ borderBottom: "1px solid #EDE8DF" }}
       >
         {collapsed ? (
           <span
@@ -133,11 +133,11 @@ export default function Sidebar({
               fontWeight: 300,
               fontSize: "1.375rem",
               letterSpacing: "0.15em",
-              color: "#d57282",
+              color: "#FFC533",
               margin: "0 auto",
             }}
           >
-            m
+            B
           </span>
         ) : (
           <span
@@ -146,18 +146,18 @@ export default function Sidebar({
               fontWeight: 300,
               fontSize: "1.25rem",
               letterSpacing: "0.18em",
-              color: "#d57282",
+              color: "#FFC533",
             }}
           >
-            maeri
+            ButterBed
           </span>
         )}
 
         {/* Desktop collapse toggle */}
         <button
           onClick={onToggle}
-          className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg transition-colors hover:bg-[#f0e8e8]"
-          style={{ color: "#b8a0a0" }}
+          className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg transition-colors hover:bg-[#F5EDD8]"
+          style={{ color: "#B8A090" }}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
@@ -166,8 +166,8 @@ export default function Sidebar({
         {/* Mobile close */}
         <button
           onClick={onMobileClose}
-          className="md:hidden flex items-center justify-center w-7 h-7 rounded-lg transition-colors hover:bg-[#f0e8e8]"
-          style={{ color: "#b8a0a0" }}
+          className="md:hidden flex items-center justify-center w-7 h-7 rounded-lg transition-colors hover:bg-[#F5EDD8]"
+          style={{ color: "#B8A090" }}
           aria-label="Close menu"
         >
           <X size={15} />
@@ -194,8 +194,8 @@ export default function Sidebar({
                     <TooltipTrigger render={<div />}>
                       <button
                         onClick={() => !collapsed && toggleGroup(item.label)}
-                        className="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 hover:bg-[#f0e8e8]"
-                        style={{ color: isGroupActive ? "#d57282" : "#525252" }}
+                        className="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 hover:bg-[#F5EDD8]"
+                        style={{ color: isGroupActive ? "#FFC533" : "#525252" }}
                       >
                         <Icon size={17} className="shrink-0" />
                       </button>
@@ -205,8 +205,8 @@ export default function Sidebar({
                 ) : (
                   <button
                     onClick={() => toggleGroup(item.label)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 hover:bg-[#f0e8e8]"
-                    style={{ color: isGroupActive ? "#d57282" : "#525252" }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 hover:bg-[#F5EDD8]"
+                    style={{ color: isGroupActive ? "#FFC533" : "#525252" }}
                   >
                     <Icon size={17} className="shrink-0" />
                     <span className="flex-1 leading-none text-left">{item.label}</span>
@@ -215,7 +215,7 @@ export default function Sidebar({
                       className="shrink-0 transition-transform duration-200"
                       style={{
                         transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                        color: "#b8a0a0",
+                        color: "#B8A090",
                       }}
                     />
                   </button>
@@ -225,7 +225,7 @@ export default function Sidebar({
                 {isOpen && (
                   <div
                     className="mt-1 space-y-0.5"
-                    style={{ marginLeft: "52px", paddingLeft: "10px", borderLeft: "1.5px solid #e8dede" }}
+                    style={{ marginLeft: "52px", paddingLeft: "10px", borderLeft: "1.5px solid #E8DFD0" }}
                   >
                     {item.children.map((child) => {
                       const ChildIcon = child.icon;
@@ -237,15 +237,15 @@ export default function Sidebar({
                           onClick={!child.built ? (e) => e.preventDefault() : undefined}
                           className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150"
                           style={{
-                            backgroundColor: isChildActive ? "#d57282" : undefined,
-                            color: isChildActive ? "#ffffff" : "#525252",
+                            backgroundColor: isChildActive ? "#FFC533" : undefined,
+                            color: isChildActive ? "#222222" : "#525252",
                             boxShadow: isChildActive
-                              ? "0 2px 10px rgba(213, 114, 130, 0.22)"
+                              ? "0 2px 10px rgba(255, 197, 51, 0.22)"
                               : undefined,
                           }}
                           onMouseEnter={(e) => {
                             if (!isChildActive)
-                              (e.currentTarget as HTMLElement).style.backgroundColor = "#f0e8e8";
+                              (e.currentTarget as HTMLElement).style.backgroundColor = "#F5EDD8";
                           }}
                           onMouseLeave={(e) => {
                             if (!isChildActive)
@@ -259,8 +259,8 @@ export default function Sidebar({
                               variant="secondary"
                               className="text-[10px] px-1.5 py-0 h-4 font-medium"
                               style={{
-                                backgroundColor: "#f9e8eb",
-                                color: "#d57282",
+                                backgroundColor: "#FFEDAB",
+                                color: "#FFC533",
                                 border: "none",
                               }}
                             >
@@ -287,13 +287,13 @@ export default function Sidebar({
               className={`
                 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
                 ${collapsed ? "justify-center" : ""}
-                ${isActive ? "text-white" : "hover:bg-[#f0e8e8]"}
+                ${isActive ? "text-[#222222]" : "hover:bg-[#F5EDD8]"}
               `}
               style={{
-                backgroundColor: isActive ? "#d57282" : undefined,
-                color: isActive ? "#ffffff" : "#525252",
+                backgroundColor: isActive ? "#FFC533" : undefined,
+                color: isActive ? "#222222" : "#525252",
                 boxShadow: isActive
-                  ? "0 2px 10px rgba(213, 114, 130, 0.22)"
+                  ? "0 2px 10px rgba(255, 197, 51, 0.22)"
                   : undefined,
               }}
             >
@@ -306,8 +306,8 @@ export default function Sidebar({
                   variant="secondary"
                   className="text-[10px] px-1.5 py-0 h-4 font-medium"
                   style={{
-                    backgroundColor: isActive ? "rgba(255,255,255,0.2)" : "#f9e8eb",
-                    color: isActive ? "#ffffff" : "#d57282",
+                    backgroundColor: isActive ? "rgba(0,0,0,0.12)" : "#FFEDAB",
+                    color: isActive ? "#222222" : "#FFC533",
                     border: "none",
                   }}
                 >
@@ -326,7 +326,7 @@ export default function Sidebar({
                 <TooltipContent side="right" className="flex items-center gap-2">
                   {item.label}
                   {!item.built && (
-                    <span className="text-[10px] text-[#d57282] font-medium">
+                    <span className="text-[10px] text-[#FFC533] font-medium">
                       Soon
                     </span>
                   )}
@@ -343,7 +343,7 @@ export default function Sidebar({
       {!collapsed && (
         <div
           className="px-4 py-3 text-[10px] shrink-0 tracking-wide"
-          style={{ color: "#c4b0b0", borderTop: "1px solid #ede8e3" }}
+          style={{ color: "#C4B0A0", borderTop: "1px solid #EDE8DF" }}
         >
           Control Centre · v1.0
         </div>

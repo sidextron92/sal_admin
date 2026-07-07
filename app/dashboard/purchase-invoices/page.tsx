@@ -237,9 +237,9 @@ function StatusFilterDropdown({
           borderRadius: 22,
           ...(isActive
             ? {
-                backgroundColor: "#f9e8eb",
-                color: "#d57282",
-                border: "1px solid #d57282",
+                backgroundColor: "#FFEDAB",
+                color: "#FFC533",
+                border: "1px solid #FFC533",
               }
             : {
                 backgroundColor: "#ffffff",
@@ -278,13 +278,13 @@ function StatusFilterDropdown({
               }}
               className="w-full text-left px-3 py-2 text-sm transition-colors"
               style={{
-                color: value === o.value ? "#d57282" : "#525252",
+                color: value === o.value ? "#FFC533" : "#525252",
                 fontWeight: value === o.value ? 600 : 400,
                 backgroundColor: "transparent",
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "#f9e8eb";
+                  "#FFEDAB";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
@@ -312,7 +312,7 @@ function SkeletonRows() {
               <div
                 className="h-3 rounded-full"
                 style={{
-                  backgroundColor: "#f0eae6",
+                  backgroundColor: "#F0EBE0",
                   width:
                     j === 0
                       ? 80
@@ -443,13 +443,13 @@ function DocumentUploadArea({
         style={{
           border: "1.5px dashed #E2E2E2",
           borderRadius: 12,
-          backgroundColor: uploading ? "#faf7f5" : "#ffffff",
+          backgroundColor: uploading ? "#FFF8ED" : "#ffffff",
           color: "#8a8a8a",
           transition: "border-color 150ms ease",
         }}
         onMouseEnter={(e) => {
           if (!uploading)
-            (e.currentTarget as HTMLLabelElement).style.borderColor = "#d57282";
+            (e.currentTarget as HTMLLabelElement).style.borderColor = "#FFC533";
         }}
         onMouseLeave={(e) => {
           (e.currentTarget as HTMLLabelElement).style.borderColor = "#E2E2E2";
@@ -459,7 +459,7 @@ function DocumentUploadArea({
           <>
             <div
               className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: "#d57282", borderTopColor: "transparent" }}
+              style={{ borderColor: "#FFC533", borderTopColor: "transparent" }}
             />
             <span className="text-xs">Uploading…</span>
           </>
@@ -613,11 +613,11 @@ function InvoiceModal({
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 pt-5 pb-4 shrink-0"
-          style={{ borderBottom: "1px solid #f0eae6" }}
+          style={{ borderBottom: "1px solid #F0EBE0" }}
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl" style={{ backgroundColor: "#f9e8eb" }}>
-              <FileText size={14} style={{ color: "#d57282" }} />
+            <div className="p-2 rounded-xl" style={{ backgroundColor: "#FFEDAB" }}>
+              <FileText size={14} style={{ color: "#FFC533" }} />
             </div>
             <h3
               className="text-sm font-semibold"
@@ -713,7 +713,7 @@ function InvoiceModal({
                   style={{
                     color: "#8a8a8a",
                     borderRight: "1px solid #E2E2E2",
-                    backgroundColor: "#faf7f5",
+                    backgroundColor: "#FFF8ED",
                   }}
                 >
                   ₹
@@ -745,7 +745,7 @@ function InvoiceModal({
                   style={{
                     color: "#8a8a8a",
                     borderRight: "1px solid #E2E2E2",
-                    backgroundColor: "#faf7f5",
+                    backgroundColor: "#FFF8ED",
                   }}
                 >
                   ₹
@@ -767,14 +767,14 @@ function InvoiceModal({
           {/* Total Payable (read-only) */}
           <div
             className="flex items-center justify-between px-4 py-2.5 rounded-xl"
-            style={{ backgroundColor: "#f9e8eb" }}
+            style={{ backgroundColor: "#FFEDAB" }}
           >
-            <span className="text-xs font-medium" style={{ color: "#d57282" }}>
+            <span className="text-xs font-medium" style={{ color: "#FFC533" }}>
               Total Payable
             </span>
             <span
               className="text-sm font-bold"
-              style={{ color: "#d57282" }}
+              style={{ color: "#FFC533" }}
             >
               {formatINR(totalPayable)}
             </span>
@@ -846,7 +846,7 @@ function InvoiceModal({
         {/* Footer */}
         <div
           className="flex gap-2 px-6 py-4 shrink-0"
-          style={{ borderTop: "1px solid #f0eae6" }}
+          style={{ borderTop: "1px solid #F0EBE0" }}
         >
           <button
             onClick={onClose}
@@ -871,8 +871,8 @@ function InvoiceModal({
                     cursor: "not-allowed",
                   }
                 : {
-                    backgroundColor: "#d57282",
-                    color: "#ffffff",
+                    backgroundColor: "#FFC533",
+                    color: "#222222",
                     boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
                   }
             }
@@ -1086,8 +1086,8 @@ export default function PurchaseInvoicesPage() {
             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all"
             style={{
               borderRadius: 22,
-              backgroundColor: "#d57282",
-              color: "#ffffff",
+              backgroundColor: "#FFC533",
+              color: "#222222",
               boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
             }}
           >
@@ -1201,8 +1201,8 @@ export default function PurchaseInvoicesPage() {
             <thead>
               <tr
                 style={{
-                  backgroundColor: "#faf7f5",
-                  borderBottom: "1px solid #f0eae6",
+                  backgroundColor: "#FFF8ED",
+                  borderBottom: "1px solid #F0EBE0",
                 }}
               >
                 {TABLE_HEADERS.map((h) => (
@@ -1234,8 +1234,8 @@ export default function PurchaseInvoicesPage() {
                 invoices.map((inv) => (
                   <tr
                     key={inv.id}
-                    className="hover:bg-[#fffbf6] transition-colors"
-                    style={{ borderBottom: "1px solid #f0eae6" }}
+                    className="hover:bg-[#FFFBF1] transition-colors"
+                    style={{ borderBottom: "1px solid #F0EBE0" }}
                   >
                     {/* Invoice No. */}
                     <td
@@ -1316,8 +1316,8 @@ export default function PurchaseInvoicesPage() {
                           href={inv.document_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[#f9e8eb]"
-                          style={{ color: "#d57282" }}
+                          className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[#FFEDAB]"
+                          style={{ color: "#FFC533" }}
                           aria-label="Open invoice PDF"
                         >
                           <ExternalLink size={11} />
@@ -1369,7 +1369,7 @@ export default function PurchaseInvoicesPage() {
                               setEditTarget(inv);
                               setShowModal(true);
                             }}
-                            className="p-1.5 rounded-lg hover:bg-[#f9e8eb] transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-[#FFEDAB] transition-colors"
                             aria-label="Edit invoice"
                           >
                             <Pencil size={13} style={{ color: "#8a8a8a" }} />

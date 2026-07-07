@@ -10,8 +10,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Control Centre — Maeri",
-  description: "Founder operations dashboard for Maeri",
+  title: "Control Centre — ButterBed",
+  description: "Founder operations dashboard for ButterBed",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

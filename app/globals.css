@@ -46,56 +46,56 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Maeri brand colors */
-  --color-brand: #d57282;
-  --color-brand-hover: #ce5a56;
-  --color-brand-light: #f9e8eb;
-  --color-brand-pale: #fdf5f7;
-  --color-cream: #fffbf6;
-  --color-sidebar-warm: #faf7f5;
-  --color-charcoal: #525252;
+  /* ButterBed brand colors */
+  --color-brand: #FFC533;
+  --color-brand-hover: #E5A800;
+  --color-brand-light: #FFEDAB;
+  --color-brand-pale: #FFF8E6;
+  --color-cream: #FFFBF1;
+  --color-sidebar-warm: #FFF8ED;
+  --color-charcoal: #222222;
 
   /* Shadows */
-  --shadow-card: 0 2px 16px rgba(213, 114, 130, 0.07);
-  --shadow-elevated: 0 4px 24px rgba(213, 114, 130, 0.1);
-  --shadow-button: 0 4px 14px rgba(213, 114, 130, 0.28);
-  --shadow-button-hover: 0 6px 18px rgba(206, 90, 86, 0.35);
+  --shadow-card: 0 2px 16px rgba(255, 197, 51, 0.07);
+  --shadow-elevated: 0 4px 24px rgba(255, 197, 51, 0.1);
+  --shadow-button: 0 4px 14px rgba(255, 197, 51, 0.28);
+  --shadow-button-hover: 0 6px 18px rgba(229, 168, 0, 0.35);
 }
 
 :root {
-  /* Maeri brand overrides */
-  --background: #fffbf6;
-  --foreground: #525252;
+  /* ButterBed brand overrides */
+  --background: #FFFBF1;
+  --foreground: #222222;
   --card: #ffffff;
-  --card-foreground: #525252;
+  --card-foreground: #222222;
   --popover: #ffffff;
-  --popover-foreground: #525252;
-  --primary: #d57282;
-  --primary-foreground: #ffffff;
-  --secondary: #f9e8eb;
-  --secondary-foreground: #525252;
-  --muted: #f5f0eb;
-  --muted-foreground: #8a8a8a;
-  --accent: #f9e8eb;
-  --accent-foreground: #d57282;
+  --popover-foreground: #222222;
+  --primary: #FFC533;
+  --primary-foreground: #222222;
+  --secondary: #FFEDAB;
+  --secondary-foreground: #222222;
+  --muted: #FFF3E3;
+  --muted-foreground: #666666;
+  --accent: #FFEDAB;
+  --accent-foreground: #222222;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: #E2E2E2;
-  --input: #E2E2E2;
-  --ring: #d57282;
-  --chart-1: #d57282;
-  --chart-2: #e8a0a8;
-  --chart-3: #f2c4c9;
-  --chart-4: #ce5a56;
-  --chart-5: #a84448;
+  --border: #E8DFD4;
+  --input: #E8DFD4;
+  --ring: #FFC533;
+  --chart-1: #FFC533;
+  --chart-2: #FFEDAB;
+  --chart-3: #FAE7D6;
+  --chart-4: #F39A8A;
+  --chart-5: #222222;
   --radius: 0.75rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #525252;
-  --sidebar-primary: #d57282;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f9e8eb;
-  --sidebar-accent-foreground: #d57282;
-  --sidebar-border: #E2E2E2;
-  --sidebar-ring: #d57282;
+  --sidebar: #FFFBF1;
+  --sidebar-foreground: #222222;
+  --sidebar-primary: #FFC533;
+  --sidebar-primary-foreground: #222222;
+  --sidebar-accent: #FFEDAB;
+  --sidebar-accent-foreground: #222222;
+  --sidebar-border: #E8DFD4;
+  --sidebar-ring: #FFC533;
 }
 
 @layer base {

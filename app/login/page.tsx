@@ -21,7 +21,7 @@ function RoseMotif() {
           cy="88"
           rx="30"
           ry="94"
-          fill="#d57282"
+          fill="#FFC533"
           opacity="0.055"
           transform={`rotate(${angle} 180 180)`}
         />
@@ -34,16 +34,16 @@ function RoseMotif() {
           rx="24"
           ry="87"
           fill="none"
-          stroke="#d57282"
+          stroke="#FFC533"
           strokeWidth="0.75"
           opacity="0.13"
           transform={`rotate(${angle} 180 180)`}
         />
       ))}
-      <circle cx="180" cy="180" r="24" fill="#d57282" opacity="0.07" />
-      <circle cx="180" cy="180" r="120" stroke="#d57282" strokeWidth="0.5" opacity="0.1" fill="none" />
-      <circle cx="180" cy="180" r="80" stroke="#d57282" strokeWidth="0.5" opacity="0.1" fill="none" />
-      <circle cx="180" cy="180" r="44" stroke="#d57282" strokeWidth="0.5" opacity="0.08" fill="none" />
+      <circle cx="180" cy="180" r="24" fill="#FFC533" opacity="0.07" />
+      <circle cx="180" cy="180" r="120" stroke="#FFC533" strokeWidth="0.5" opacity="0.1" fill="none" />
+      <circle cx="180" cy="180" r="80" stroke="#FFC533" strokeWidth="0.5" opacity="0.1" fill="none" />
+      <circle cx="180" cy="180" r="44" stroke="#FFC533" strokeWidth="0.5" opacity="0.08" fill="none" />
     </svg>
   );
 }
@@ -88,7 +88,7 @@ export default function LoginPage() {
         className="hidden lg:flex flex-col items-center justify-center relative overflow-hidden shrink-0"
         style={{
           width: "42%",
-          background: "linear-gradient(155deg, #fdf5f7 0%, #fce8ec 55%, #f8dce4 100%)",
+          background: "linear-gradient(155deg, #FFF8E6 0%, #FFF0C4 55%, #FFE8A0 100%)",
         }}
       >
         {/* Decorative rose motif */}
@@ -104,11 +104,11 @@ export default function LoginPage() {
               fontWeight: 300,
               fontSize: "4rem",
               letterSpacing: "0.25em",
-              color: "#d57282",
+              color: "#FFC533",
               lineHeight: 1,
             }}
           >
-            maeri
+            ButterBed
           </h1>
 
           {/* Decorative divider */}
@@ -116,7 +116,7 @@ export default function LoginPage() {
             style={{
               width: 48,
               height: 1,
-              backgroundColor: "#d57282",
+              backgroundColor: "#FFC533",
               margin: "20px auto",
               opacity: 0.45,
             }}
@@ -127,7 +127,7 @@ export default function LoginPage() {
               fontSize: "0.6rem",
               letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "#b8838e",
+              color: "#B8935A",
               fontWeight: 500,
             }}
           >
@@ -138,7 +138,7 @@ export default function LoginPage() {
             style={{
               marginTop: 36,
               fontSize: "0.875rem",
-              color: "#b8838e",
+              color: "#B8935A",
               lineHeight: 1.9,
               fontWeight: 400,
             }}
@@ -154,19 +154,19 @@ export default function LoginPage() {
           className="absolute bottom-8"
           style={{
             fontSize: "0.6rem",
-            color: "#c9a3aa",
+            color: "#C9A88A",
             letterSpacing: "0.1em",
             fontWeight: 400,
           }}
         >
-          maeri.in
+          butterbed.in
         </p>
       </div>
 
       {/* ── Right form panel ── */}
       <div
         className="flex flex-col flex-1 items-center justify-center px-6 py-12"
-        style={{ backgroundColor: "#fffbf6" }}
+        style={{ backgroundColor: "#FFFBF1" }}
       >
         {/* Mobile logo */}
         <div className="lg:hidden text-center mb-10">
@@ -176,11 +176,11 @@ export default function LoginPage() {
               fontWeight: 300,
               fontSize: "2.75rem",
               letterSpacing: "0.22em",
-              color: "#d57282",
+              color: "#FFC533",
               lineHeight: 1,
             }}
           >
-            maeri
+            ButterBed
           </h1>
           <p
             style={{
@@ -201,7 +201,7 @@ export default function LoginPage() {
           className="w-full max-w-sm bg-white rounded-2xl p-8"
           style={{
             border: "1px solid #E2E2E2",
-            boxShadow: "0 4px 24px rgba(213, 114, 130, 0.1)",
+            boxShadow: "0 4px 24px rgba(255, 197, 51, 0.1)",
           }}
         >
           <div className="mb-7">
@@ -229,7 +229,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@maeri.in"
+                placeholder="admin@butterbed.in"
                 className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200"
                 style={{
                   borderColor: "#E2E2E2",
@@ -237,8 +237,8 @@ export default function LoginPage() {
                   backgroundColor: "#fafafa",
                 }}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#d57282";
-                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(213, 114, 130, 0.1)";
+                  e.currentTarget.style.borderColor = "#FFC533";
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255, 197, 51, 0.1)";
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = "#E2E2E2";
@@ -270,8 +270,8 @@ export default function LoginPage() {
                   backgroundColor: "#fafafa",
                 }}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#d57282";
-                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(213, 114, 130, 0.1)";
+                  e.currentTarget.style.borderColor = "#FFC533";
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255, 197, 51, 0.1)";
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = "#E2E2E2";
@@ -294,21 +294,21 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 text-sm font-semibold text-white transition-all duration-200 mt-2 disabled:opacity-60"
               style={{
-                backgroundColor: loading ? "#e8a0a8" : "#d57282",
+                backgroundColor: loading ? "#FFD980" : "#FFC533",
                 borderRadius: "22px",
-                boxShadow: loading ? "none" : "0 4px 14px rgba(213, 114, 130, 0.28)",
+                boxShadow: loading ? "none" : "0 4px 14px rgba(255, 197, 51, 0.28)",
               }}
               onMouseEnter={(e) => {
                 if (!loading) {
-                  e.currentTarget.style.backgroundColor = "#ce5a56";
-                  e.currentTarget.style.boxShadow = "0 6px 18px rgba(206, 90, 86, 0.35)";
+                  e.currentTarget.style.backgroundColor = "#E5A800";
+                  e.currentTarget.style.boxShadow = "0 6px 18px rgba(229, 168, 0, 0.35)";
                   e.currentTarget.style.transform = "translateY(-1px)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!loading) {
-                  e.currentTarget.style.backgroundColor = "#d57282";
-                  e.currentTarget.style.boxShadow = "0 4px 14px rgba(213, 114, 130, 0.28)";
+                  e.currentTarget.style.backgroundColor = "#FFC533";
+                  e.currentTarget.style.boxShadow = "0 4px 14px rgba(255, 197, 51, 0.28)";
                   e.currentTarget.style.transform = "translateY(0)";
                 }
               }}
@@ -320,9 +320,9 @@ export default function LoginPage() {
 
         <p
           className="text-center text-xs mt-6"
-          style={{ color: "#c4a0a5", letterSpacing: "0.04em" }}
+          style={{ color: "#C4A08A", letterSpacing: "0.04em" }}
         >
-          Maeri Control Centre · Founder Access Only
+          ButterBed Control Centre · Founder Access Only
         </p>
       </div>
     </div>

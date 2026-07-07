@@ -38,7 +38,7 @@ export default function MetricCard({
       className="bg-white rounded-2xl p-5 flex flex-col gap-3 border transition-all duration-200 hover:-translate-y-px"
       style={{
         borderColor: "#E2E2E2",
-        boxShadow: "0 2px 16px rgba(213, 114, 130, 0.07)",
+        boxShadow: "0 2px 16px rgba(255, 197, 51, 0.07)",
       }}
     >
       <div className="flex items-start justify-between">
@@ -75,8 +75,8 @@ export default function MetricCard({
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
           style={{
-            backgroundColor: "#f9e8eb",
-            boxShadow: "inset 0 1px 2px rgba(213, 114, 130, 0.08)",
+            backgroundColor: "#FFEDAB",
+            boxShadow: "inset 0 1px 2px rgba(255, 197, 51, 0.08)",
           }}
         >
           {icon}

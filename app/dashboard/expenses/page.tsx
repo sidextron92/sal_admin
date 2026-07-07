@@ -269,7 +269,7 @@ function FunctionFilterDropdown({
         style={{
           borderRadius: 22,
           ...(isActive
-            ? { backgroundColor: "#f9e8eb", color: "#d57282", border: "1px solid #d57282" }
+            ? { backgroundColor: "#FFEDAB", color: "#FFC533", border: "1px solid #FFC533" }
             : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }),
         }}
       >
@@ -298,11 +298,11 @@ function FunctionFilterDropdown({
             onClick={() => { onChange(""); setOpen(false); }}
             className="w-full text-left px-3 py-2 text-sm transition-colors"
             style={{
-              color: value === "" ? "#d57282" : "#525252",
+              color: value === "" ? "#FFC533" : "#525252",
               fontWeight: value === "" ? 600 : 400,
               backgroundColor: "transparent",
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#FFEDAB"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
           >
             All Functions
@@ -313,11 +313,11 @@ function FunctionFilterDropdown({
               onClick={() => { onChange(o.value); setOpen(false); }}
               className="w-full text-left px-3 py-2 text-sm transition-colors"
               style={{
-                color: value === o.value ? "#d57282" : "#525252",
+                color: value === o.value ? "#FFC533" : "#525252",
                 fontWeight: value === o.value ? 600 : 400,
                 backgroundColor: "transparent",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#FFEDAB"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
             >
               {o.label}
@@ -341,7 +341,7 @@ function SkeletonRows() {
               <div
                 className="h-3 rounded-full"
                 style={{
-                  backgroundColor: "#f0eae6",
+                  backgroundColor: "#F0EBE0",
                   width: j === 0 ? 80 : j === 1 ? 70 : j === 3 ? 140 : j === 8 ? 60 : 100,
                 }}
               />
@@ -418,11 +418,11 @@ function FormFunctionSelect({
               onClick={() => { onChange(o.value); setOpen(false); }}
               className="w-full text-left px-3 py-2 text-sm transition-colors"
               style={{
-                color: value === o.value ? "#d57282" : "#525252",
+                color: value === o.value ? "#FFC533" : "#525252",
                 fontWeight: value === o.value ? 600 : 400,
                 backgroundColor: "transparent",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#FFEDAB"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
             >
               {o.label}
@@ -497,7 +497,7 @@ function FormTypeSelect({
           type="button"
           onClick={() => { setMode("preset"); onChange(""); }}
           className="text-xs"
-          style={{ color: "#d57282" }}
+          style={{ color: "#FFC533" }}
         >
           ← Back to presets
         </button>
@@ -544,23 +544,23 @@ function FormTypeSelect({
               onClick={() => { onChange(preset); setOpen(false); }}
               className="w-full text-left px-3 py-2 text-sm transition-colors"
               style={{
-                color: value === preset ? "#d57282" : "#525252",
+                color: value === preset ? "#FFC533" : "#525252",
                 fontWeight: value === preset ? 600 : 400,
                 backgroundColor: "transparent",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#FFEDAB"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
             >
               {preset}
             </button>
           ))}
-          <div style={{ borderTop: "1px solid #f0eae6", margin: "4px 0" }} />
+          <div style={{ borderTop: "1px solid #F0EBE0", margin: "4px 0" }} />
           <button
             type="button"
             onClick={() => { setMode("other"); onChange(""); setOpen(false); }}
             className="w-full text-left px-3 py-2 text-sm transition-colors"
             style={{ color: "#8a8a8a", backgroundColor: "transparent" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#FFEDAB"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
           >
             Other…
@@ -669,11 +669,11 @@ function ExpenseModal({
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 pt-5 pb-4 shrink-0"
-          style={{ borderBottom: "1px solid #f0eae6" }}
+          style={{ borderBottom: "1px solid #F0EBE0" }}
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl" style={{ backgroundColor: "#f9e8eb" }}>
-              <Receipt size={14} style={{ color: "#d57282" }} />
+            <div className="p-2 rounded-xl" style={{ backgroundColor: "#FFEDAB" }}>
+              <Receipt size={14} style={{ color: "#FFC533" }} />
             </div>
             <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>
               {mode === "add" ? "Add Expense" : "Edit Expense"}
@@ -753,7 +753,7 @@ function ExpenseModal({
                 className="flex items-center rounded-xl overflow-hidden"
                 style={{ border: "1px solid #E2E2E2" }}
               >
-                <span className="px-3 py-2.5 text-sm shrink-0" style={{ color: "#8a8a8a", borderRight: "1px solid #E2E2E2", backgroundColor: "#faf7f5" }}>₹</span>
+                <span className="px-3 py-2.5 text-sm shrink-0" style={{ color: "#8a8a8a", borderRight: "1px solid #E2E2E2", backgroundColor: "#FFF8ED" }}>₹</span>
                 <input
                   type="number"
                   min={0}
@@ -776,7 +776,7 @@ function ExpenseModal({
                 className="flex items-center rounded-xl overflow-hidden"
                 style={{ border: "1px solid #E2E2E2" }}
               >
-                <span className="px-3 py-2.5 text-sm shrink-0" style={{ color: "#8a8a8a", borderRight: "1px solid #E2E2E2", backgroundColor: "#faf7f5" }}>₹</span>
+                <span className="px-3 py-2.5 text-sm shrink-0" style={{ color: "#8a8a8a", borderRight: "1px solid #E2E2E2", backgroundColor: "#FFF8ED" }}>₹</span>
                 <input
                   type="number"
                   min={0}
@@ -794,10 +794,10 @@ function ExpenseModal({
           {/* Total (read-only) */}
           <div
             className="flex items-center justify-between px-4 py-2.5 rounded-xl"
-            style={{ backgroundColor: "#f9e8eb" }}
+            style={{ backgroundColor: "#FFEDAB" }}
           >
-            <span className="text-xs font-medium" style={{ color: "#d57282" }}>Total</span>
-            <span className="text-sm font-bold" style={{ color: "#d57282" }}>{formatINR(total)}</span>
+            <span className="text-xs font-medium" style={{ color: "#FFC533" }}>Total</span>
+            <span className="text-sm font-bold" style={{ color: "#FFC533" }}>{formatINR(total)}</span>
           </div>
 
           {/* Remarks */}
@@ -819,7 +819,7 @@ function ExpenseModal({
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <div
               className="relative w-9 h-5 rounded-full transition-colors duration-150 shrink-0"
-              style={{ backgroundColor: form.is_recurring ? "#d57282" : "#E2E2E2" }}
+              style={{ backgroundColor: form.is_recurring ? "#FFC533" : "#E2E2E2" }}
               onClick={() => set("is_recurring", !form.is_recurring)}
             >
               <div
@@ -836,7 +836,7 @@ function ExpenseModal({
         {/* Footer */}
         <div
           className="flex gap-2 px-6 py-4 shrink-0"
-          style={{ borderTop: "1px solid #f0eae6" }}
+          style={{ borderTop: "1px solid #F0EBE0" }}
         >
           <button
             onClick={onClose}
@@ -852,7 +852,7 @@ function ExpenseModal({
             style={
               saving
                 ? { backgroundColor: "#f0e8ea", color: "#c0a0a8", cursor: "not-allowed" }
-                : { backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }
+                : { backgroundColor: "#FFC533", color: "#222222", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }
             }
           >
             {saving ? "Saving…" : mode === "add" ? "Add Expense" : "Save Changes"}
@@ -1049,8 +1049,8 @@ export default function ExpensesPage() {
             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all"
             style={{
               borderRadius: 22,
-              backgroundColor: "#d57282",
-              color: "#ffffff",
+              backgroundColor: "#FFC533",
+              color: "#222222",
               boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
             }}
           >
@@ -1107,7 +1107,7 @@ export default function ExpensesPage() {
           style={{
             ...inputBorder,
             minWidth: 160,
-            ...(typeFilter ? { border: "1px solid #d57282", backgroundColor: "#f9e8eb" } : {}),
+            ...(typeFilter ? { border: "1px solid #FFC533", backgroundColor: "#FFEDAB" } : {}),
           }}
         >
           <input
@@ -1116,11 +1116,11 @@ export default function ExpensesPage() {
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             className="flex-1 text-sm bg-transparent outline-none placeholder:text-[#c0b8b8]"
-            style={{ color: typeFilter ? "#d57282" : "#525252" }}
+            style={{ color: typeFilter ? "#FFC533" : "#525252" }}
           />
           {typeFilter && (
             <button onClick={() => setTypeFilter("")}>
-              <X size={13} style={{ color: "#d57282" }} />
+              <X size={13} style={{ color: "#FFC533" }} />
             </button>
           )}
         </div>
@@ -1184,7 +1184,7 @@ export default function ExpensesPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ backgroundColor: "#faf7f5", borderBottom: "1px solid #f0eae6" }}>
+              <tr style={{ backgroundColor: "#FFF8ED", borderBottom: "1px solid #F0EBE0" }}>
                 {["Date", "Function", "Type", "Particulars", "Base Amount", "Tax", "Total", "Rec.", "Remarks", "Actions"].map(
                   (h) => (
                     <th
@@ -1216,8 +1216,8 @@ export default function ExpensesPage() {
                 expenses.map((exp) => (
                   <tr
                     key={exp.id}
-                    className="hover:bg-[#fffbf6] transition-colors"
-                    style={{ borderBottom: "1px solid #f0eae6" }}
+                    className="hover:bg-[#FFFBF1] transition-colors"
+                    style={{ borderBottom: "1px solid #F0EBE0" }}
                   >
                     {/* Date */}
                     <td className="px-4 py-3 whitespace-nowrap text-xs" style={{ color: "#525252" }}>
@@ -1264,7 +1264,7 @@ export default function ExpensesPage() {
                     {/* Recurring */}
                     <td className="px-4 py-3 text-center">
                       {exp.is_recurring && (
-                        <RefreshCw size={13} style={{ color: "#d57282" }} />
+                        <RefreshCw size={13} style={{ color: "#FFC533" }} />
                       )}
                     </td>
 
@@ -1302,7 +1302,7 @@ export default function ExpensesPage() {
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => { setEditTarget(exp); setShowModal(true); }}
-                            className="p-1.5 rounded-lg hover:bg-[#f9e8eb] transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-[#FFEDAB] transition-colors"
                             aria-label="Edit expense"
                           >
                             <Pencil size={13} style={{ color: "#8a8a8a" }} />

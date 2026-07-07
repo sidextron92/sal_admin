@@ -91,7 +91,7 @@ const SR_STATUS_CONFIG: Record<string, { label: string; bg: string; color: strin
   "RTO DELIVERED":            { label: "RTO Delivered",  bg: "#fff0f0", color: "#e05252" },
   CANCELED:                   { label: "Cancelled",      bg: "#f5f5f5", color: "#8a8a8a" },
   "UNDELIVERED-3RD ATTEMPT":  { label: "Undelivered",   bg: "#fff3e8", color: "#d4600a" },
-  "SELF FULFILLED":           { label: "Self Fulfilled", bg: "#f9e8eb", color: "#d57282" },
+  "SELF FULFILLED":           { label: "Self Fulfilled", bg: "#FFEDAB", color: "#FFC533" },
 };
 
 function getSrStatusConfig(status: string | null) {
@@ -186,7 +186,7 @@ function TrackingPanel({
         {/* Header */}
         <div
           className="flex items-center justify-between px-5 py-4"
-          style={{ borderBottom: "1px solid #f0eae6" }}
+          style={{ borderBottom: "1px solid #F0EBE0" }}
         >
           <div>
             <p className="text-sm font-semibold" style={{ color: "#525252" }}>
@@ -195,7 +195,7 @@ function TrackingPanel({
             {order.awb_code && (
               <span
                 className="inline-flex items-center gap-1 text-[11px] font-mono mt-0.5 px-2 py-0.5 rounded-md"
-                style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                style={{ backgroundColor: "#FFEDAB", color: "#FFC533" }}
               >
                 AWB {order.awb_code}
               </span>
@@ -230,7 +230,7 @@ function TrackingPanel({
             >
               <MapPin size={28} style={{ opacity: 0.3 }} />
               <p className="text-sm">No tracking events yet</p>
-              <p className="text-xs" style={{ color: "#b8a0a0" }}>
+              <p className="text-xs" style={{ color: "#B8A090" }}>
                 Events appear once the courier starts scanning
               </p>
             </div>
@@ -276,7 +276,7 @@ function TrackingPanel({
                           {log.partner_status}
                         </p>
                       )}
-                      <p className="text-[10px] mt-1" style={{ color: "#b8a0a0" }}>
+                      <p className="text-[10px] mt-1" style={{ color: "#B8A090" }}>
                         {formatTs(log.event_timestamp ?? log.received_at)}
                         {log.partner_name && ` · ${log.partner_name}`}
                       </p>
@@ -439,7 +439,7 @@ function StatusFilterDropdown({
         style={{
           borderRadius: 22,
           ...(isActive
-            ? { backgroundColor: "#f9e8eb", color: "#d57282", border: "1px solid #d57282" }
+            ? { backgroundColor: "#FFEDAB", color: "#FFC533", border: "1px solid #FFC533" }
             : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }),
         }}
       >
@@ -470,11 +470,11 @@ function StatusFilterDropdown({
               onClick={() => { onChange(f.value); setOpen(false); }}
               className="w-full text-left px-3 py-2 text-sm transition-colors"
               style={{
-                color: value === f.value ? "#d57282" : "#525252",
+                color: value === f.value ? "#FFC533" : "#525252",
                 fontWeight: value === f.value ? 600 : 400,
                 backgroundColor: "transparent",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9e8eb"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#FFEDAB"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
             >
               {f.label}
@@ -514,8 +514,8 @@ function AddCustomOrderDropdown({
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-4 py-2 rounded-[22px] text-sm font-medium transition-all duration-100"
         style={{
-          backgroundColor: "#d57282",
-          color: "#ffffff",
+          backgroundColor: "#FFC533",
+          color: "#222222",
           boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
         }}
       >
@@ -537,22 +537,22 @@ function AddCustomOrderDropdown({
               setOpen(false);
               onSelect("Offline");
             }}
-            className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#faf7f5] transition-colors"
+            className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#FFF8ED] transition-colors"
             style={{ color: "#525252" }}
           >
-            <ShoppingBag size={14} style={{ color: "#d57282" }} />
+            <ShoppingBag size={14} style={{ color: "#FFC533" }} />
             Offline Order
           </button>
-          <div style={{ borderTop: "1px solid #f0eae6" }} />
+          <div style={{ borderTop: "1px solid #F0EBE0" }} />
           <button
             onClick={() => {
               setOpen(false);
               onSelect("Amazon");
             }}
-            className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#faf7f5] transition-colors"
+            className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#FFF8ED] transition-colors"
             style={{ color: "#525252" }}
           >
-            <ShoppingCart size={14} style={{ color: "#d57282" }} />
+            <ShoppingCart size={14} style={{ color: "#FFC533" }} />
             Amazon Order
           </button>
         </div>
@@ -643,7 +643,7 @@ function VariantPicker({
         {/* Header */}
         <div
           className="px-5 pt-4 pb-3 space-y-3"
-          style={{ borderBottom: "1px solid #f0eae6" }}
+          style={{ borderBottom: "1px solid #F0EBE0" }}
         >
           <div className="flex items-center justify-between">
             <h4
@@ -689,7 +689,7 @@ function VariantPicker({
               <div
                 className="w-6 h-6 rounded-full border-2 animate-spin"
                 style={{
-                  borderColor: "#d57282",
+                  borderColor: "#FFC533",
                   borderTopColor: "transparent",
                 }}
               />
@@ -703,22 +703,22 @@ function VariantPicker({
               No products found
             </div>
           ) : (
-            <div className="divide-y" style={{ borderColor: "#f0eae6" }}>
+            <div className="divide-y" style={{ borderColor: "#F0EBE0" }}>
               {results.map((v) => {
                 const selected = selectedIds.has(v.variant_id);
                 return (
                   <button
                     key={v.variant_id}
                     onClick={() => onToggle(v)}
-                    className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[#fffbf6] transition-colors"
+                    className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[#FFFBF1] transition-colors"
                     style={{
-                      backgroundColor: selected ? "#f9e8eb" : undefined,
+                      backgroundColor: selected ? "#FFEDAB" : undefined,
                     }}
                   >
                     {/* Image */}
                     <div
                       className="w-[30px] h-[30px] rounded-lg overflow-hidden shrink-0"
-                      style={{ backgroundColor: "#f9e8eb" }}
+                      style={{ backgroundColor: "#FFEDAB" }}
                     >
                       {v.products.image_url ? (
                         <img
@@ -728,7 +728,7 @@ function VariantPicker({
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Package size={10} style={{ color: "#d57282" }} />
+                          <Package size={10} style={{ color: "#FFC533" }} />
                         </div>
                       )}
                     </div>
@@ -774,15 +774,15 @@ function VariantPicker({
                     disabled={loadingMore}
                     className="flex items-center gap-2 px-4 py-2 rounded-[22px] text-xs font-medium transition-all"
                     style={{
-                      border: "1px solid #d57282",
-                      color: "#d57282",
+                      border: "1px solid #FFC533",
+                      color: "#FFC533",
                       backgroundColor: "#ffffff",
                       opacity: loadingMore ? 0.6 : 1,
                     }}
                   >
                     {loadingMore ? (
                       <>
-                        <div className="w-3 h-3 rounded-full border border-t-transparent animate-spin" style={{ borderColor: "#d57282", borderTopColor: "transparent" }} />
+                        <div className="w-3 h-3 rounded-full border border-t-transparent animate-spin" style={{ borderColor: "#FFC533", borderTopColor: "transparent" }} />
                         Loading…
                       </>
                     ) : (
@@ -796,13 +796,13 @@ function VariantPicker({
         </div>
 
         {/* Done */}
-        <div className="px-5 py-3" style={{ borderTop: "1px solid #f0eae6" }}>
+        <div className="px-5 py-3" style={{ borderTop: "1px solid #F0EBE0" }}>
           <button
             onClick={onClose}
             className="w-full py-2.5 rounded-[22px] text-sm font-semibold"
             style={{
-              backgroundColor: "#d57282",
-              color: "#ffffff",
+              backgroundColor: "#FFC533",
+              color: "#222222",
               boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
             }}
           >
@@ -1037,7 +1037,7 @@ function AddCustomOrderModal({
           {/* Header */}
           <div
             className="flex items-start justify-between px-6 pt-5 pb-4 shrink-0"
-            style={{ borderBottom: "1px solid #f0eae6" }}
+            style={{ borderBottom: "1px solid #F0EBE0" }}
           >
             <div>
               <h3
@@ -1330,7 +1330,7 @@ function AddCustomOrderModal({
                         className="px-4 py-2 rounded-[22px] text-sm font-medium transition-all duration-100"
                         style={
                           paymentMethod === m
-                            ? { backgroundColor: "#d57282", color: "#ffffff", border: "1px solid transparent" }
+                            ? { backgroundColor: "#FFC533", color: "#222222", border: "1px solid transparent" }
                             : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }
                         }
                       >
@@ -1356,7 +1356,7 @@ function AddCustomOrderModal({
                         className="px-4 py-2 rounded-[22px] text-sm font-medium transition-all duration-100"
                         style={
                           fulfillmentStatus === s
-                            ? { backgroundColor: "#d57282", color: "#ffffff", border: "1px solid transparent" }
+                            ? { backgroundColor: "#FFC533", color: "#222222", border: "1px solid transparent" }
                             : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }
                         }
                       >
@@ -1400,8 +1400,8 @@ function AddCustomOrderModal({
                   onClick={() => setVariantPickerOpen(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-[22px] text-xs font-medium transition-all duration-100"
                   style={{
-                    border: "1px solid #d57282",
-                    color: "#d57282",
+                    border: "1px solid #FFC533",
+                    color: "#FFC533",
                     backgroundColor: "#ffffff",
                   }}
                 >
@@ -1415,7 +1415,7 @@ function AddCustomOrderModal({
                   className="py-8 text-center text-sm rounded-xl"
                   style={{
                     color: "#8a8a8a",
-                    backgroundColor: "#faf7f5",
+                    backgroundColor: "#FFF8ED",
                     border: "1px dashed #E2E2E2",
                   }}
                 >
@@ -1433,14 +1433,14 @@ function AddCustomOrderModal({
                         key={item.variant_id}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{
-                          borderTop: idx > 0 ? "1px solid #f0eae6" : undefined,
+                          borderTop: idx > 0 ? "1px solid #F0EBE0" : undefined,
                         }}
                       >
                         {/* Product info */}
                         <div className="flex-1 min-w-0">
                           <p
                             className="text-sm font-medium truncate"
-                            style={{ color: "#d57282" }}
+                            style={{ color: "#FFC533" }}
                           >
                             {item.product_title}
                           </p>
@@ -1573,8 +1573,8 @@ function AddCustomOrderModal({
               <div
                 className="rounded-xl px-4 py-3 space-y-2"
                 style={{
-                  backgroundColor: "#faf7f5",
-                  border: "1px solid #f0eae6",
+                  backgroundColor: "#FFF8ED",
+                  border: "1px solid #F0EBE0",
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -1614,17 +1614,17 @@ function AddCustomOrderModal({
                 </div>
                 <div
                   className="flex items-center justify-between pt-2"
-                  style={{ borderTop: "1px solid #f0eae6" }}
+                  style={{ borderTop: "1px solid #F0EBE0" }}
                 >
                   <span
                     className="text-sm font-semibold"
-                    style={{ color: "#d57282" }}
+                    style={{ color: "#FFC533" }}
                   >
                     Final Total
                   </span>
                   <span
                     className="text-base font-bold"
-                    style={{ color: "#d57282" }}
+                    style={{ color: "#FFC533" }}
                   >
                     {formatAmount(finalTotal, "INR")}
                   </span>
@@ -1722,7 +1722,7 @@ function AddCustomOrderModal({
           {/* Footer */}
           <div
             className="flex items-center gap-2 px-6 py-4 shrink-0"
-            style={{ borderTop: "1px solid #f0eae6" }}
+            style={{ borderTop: "1px solid #F0EBE0" }}
           >
             {error && (
               <p
@@ -1751,8 +1751,8 @@ function AddCustomOrderModal({
                 style={
                   !saving
                     ? {
-                        backgroundColor: "#d57282",
-                        color: "#ffffff",
+                        backgroundColor: "#FFC533",
+                        color: "#222222",
                         boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
                       }
                     : {
@@ -1893,7 +1893,7 @@ export default function OrdersPage() {
             style={{
               borderRadius: 22,
               ...(delayFilter === value
-                ? { backgroundColor: "#d57282", color: "#ffffff", border: "1px solid #d57282" }
+                ? { backgroundColor: "#FFC533", color: "#222222", border: "1px solid #FFC533" }
                 : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }),
             }}
           >
@@ -1930,7 +1930,7 @@ export default function OrdersPage() {
           className="grid text-xs font-semibold uppercase tracking-wide px-5 py-3"
           style={{
             gridTemplateColumns: "90px 1fr 1fr 100px 90px 130px 90px",
-            borderBottom: "1px solid #f0eae6",
+            borderBottom: "1px solid #F0EBE0",
             color: "#8a8a8a",
           }}
         >
@@ -1948,7 +1948,7 @@ export default function OrdersPage() {
           <div className="py-16 flex flex-col items-center gap-3" style={{ color: "#8a8a8a" }}>
             <div
               className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: "#d57282", borderTopColor: "transparent" }}
+              style={{ borderColor: "#FFC533", borderTopColor: "transparent" }}
             />
             <p className="text-sm">Loading orders…</p>
           </div>
@@ -1958,7 +1958,7 @@ export default function OrdersPage() {
             <p className="text-sm">No orders found</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "#f0eae6" }}>
+          <div className="divide-y" style={{ borderColor: "#F0EBE0" }}>
             {orders.map((order) => {
               const statusCfg = order.cancelled_at
                 ? SR_STATUS_CONFIG["CANCELED"]
@@ -1971,7 +1971,7 @@ export default function OrdersPage() {
               return (
                 <div
                   key={order.order_id}
-                  className="grid items-center px-5 py-3.5 hover:bg-[#fffbf6] transition-colors duration-100"
+                  className="grid items-center px-5 py-3.5 hover:bg-[#FFFBF1] transition-colors duration-100"
                   style={{ gridTemplateColumns: "90px 1fr 1fr 100px 90px 130px 90px" }}
                 >
                   {/* Order # */}
@@ -1982,7 +1982,7 @@ export default function OrdersPage() {
                     {isRepeat && (
                       <span
                         className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
-                        style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                        style={{ backgroundColor: "#FFEDAB", color: "#FFC533" }}
                       >
                         Repeat
                       </span>
@@ -2068,7 +2068,7 @@ export default function OrdersPage() {
                       <button
                         onClick={() => setTrackingOrder(order)}
                         className="text-[10px] font-mono flex items-center gap-0.5 hover:underline"
-                        style={{ color: "#b8a0a0" }}
+                        style={{ color: "#B8A090" }}
                         title="View tracking"
                       >
                         <MapPin size={8} />
@@ -2101,7 +2101,7 @@ export default function OrdersPage() {
         {totalPages > 1 && (
           <div
             className="flex items-center justify-between px-5 py-3.5 text-sm"
-            style={{ borderTop: "1px solid #f0eae6" }}
+            style={{ borderTop: "1px solid #F0EBE0" }}
           >
             <span style={{ color: "#8a8a8a" }}>
               Page {page} of {totalPages} · {total} orders

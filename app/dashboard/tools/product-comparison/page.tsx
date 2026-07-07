@@ -102,7 +102,7 @@ function BrandModal({ open, onClose, onSave, initial }: BrandModalProps) {
 
   if (!open) return null;
 
-  const inputClass = "w-full text-sm rounded-xl px-3 py-2.5 outline-none placeholder:text-[#c0b8b8]";
+  const inputClass = "w-full text-sm rounded-xl px-3 py-2.5 outline-none placeholder:text-[#C0B0A0]";
   const inputStyle = { border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#ffffff" };
   const labelClass = "block text-xs font-medium mb-1.5";
   const labelStyle = { color: "#525252" };
@@ -117,10 +117,10 @@ function BrandModal({ open, onClose, onSave, initial }: BrandModalProps) {
         className="w-full max-w-md rounded-2xl overflow-hidden flex flex-col"
         style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}
       >
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 shrink-0" style={{ borderBottom: "1px solid #f0eae6" }}>
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 shrink-0" style={{ borderBottom: "1px solid #F0EBE0" }}>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl" style={{ backgroundColor: "#f9e8eb" }}>
-              <GitCompare size={14} style={{ color: "#d57282" }} />
+            <div className="p-2 rounded-xl" style={{ backgroundColor: "#FFEDAB" }}>
+              <GitCompare size={14} style={{ color: "#FFC533" }} />
             </div>
             <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>
               {mode === "add" ? "Add Competitor Brand" : "Edit Brand"}
@@ -143,13 +143,13 @@ function BrandModal({ open, onClose, onSave, initial }: BrandModalProps) {
           {error && <p className="text-xs" style={{ color: "#e05252" }}>{error}</p>}
         </div>
 
-        <div className="flex gap-2 px-6 py-4 shrink-0" style={{ borderTop: "1px solid #f0eae6" }}>
+        <div className="flex gap-2 px-6 py-4 shrink-0" style={{ borderTop: "1px solid #F0EBE0" }}>
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid #E2E2E2", color: "#525252", backgroundColor: "#ffffff" }}>Cancel</button>
           <button
             onClick={handleSave}
             disabled={saving}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={saving ? { backgroundColor: "#f0e8ea", color: "#c0a0a8", cursor: "not-allowed" } : { backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }}
+            style={saving ? { backgroundColor: "#F5EDD8", color: "#C0A090", cursor: "not-allowed" } : { backgroundColor: "#FFC533", color: "#222222", boxShadow: "0 4px 14px rgba(255,197,51,0.28)" }}
           >
             {saving ? "Saving…" : mode === "add" ? "Add Brand" : "Save Changes"}
           </button>
@@ -182,8 +182,8 @@ function statusLabel(s: BrandScrapeStatus): string {
 function StatusIcon({ s }: { s: BrandScrapeStatus }) {
   if (s.state === "done")  return <CheckCircle2 size={16} style={{ color: "#4caf7d" }} />;
   if (s.state === "error") return <XCircle size={16} style={{ color: "#e05252" }} />;
-  if (s.state === "idle")  return <Clock size={16} style={{ color: "#c0b8b8" }} />;
-  return <Loader2 size={16} className="animate-spin" style={{ color: "#d57282" }} />;
+  if (s.state === "idle")  return <Clock size={16} style={{ color: "#C0B0A0" }} />;
+  return <Loader2 size={16} className="animate-spin" style={{ color: "#FFC533" }} />;
 }
 
 function ScrapeProgressModal({ open, brands, statuses, onClose }: ScrapeProgressModalProps) {
@@ -204,10 +204,10 @@ function ScrapeProgressModal({ open, brands, statuses, onClose }: ScrapeProgress
         style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 shrink-0" style={{ borderBottom: "1px solid #f0eae6" }}>
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 shrink-0" style={{ borderBottom: "1px solid #F0EBE0" }}>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl" style={{ backgroundColor: "#f9e8eb" }}>
-              <Wifi size={14} style={{ color: "#d57282" }} />
+            <div className="p-2 rounded-xl" style={{ backgroundColor: "#FFEDAB" }}>
+              <Wifi size={14} style={{ color: "#FFC533" }} />
             </div>
             <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>Scraping Product Data</h3>
           </div>
@@ -224,7 +224,7 @@ function ScrapeProgressModal({ open, brands, statuses, onClose }: ScrapeProgress
               <div
                 key={brand.id}
                 className="flex items-start gap-3 rounded-xl px-4 py-3"
-                style={{ backgroundColor: "#faf7f5", border: "1px solid #f0eae6" }}
+                style={{ backgroundColor: "#FFF8ED", border: "1px solid #F0EBE0" }}
               >
                 <div className="mt-0.5 shrink-0">
                   <StatusIcon s={s} />
@@ -241,15 +241,15 @@ function ScrapeProgressModal({ open, brands, statuses, onClose }: ScrapeProgress
         </div>
 
         {/* Footer */}
-        <div className="flex gap-2 px-6 py-4 shrink-0" style={{ borderTop: "1px solid #f0eae6" }}>
+        <div className="flex gap-2 px-6 py-4 shrink-0" style={{ borderTop: "1px solid #F0EBE0" }}>
           <button
             onClick={onClose}
             disabled={!allSettled}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
             style={
               allSettled
-                ? { backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }
-                : { backgroundColor: "#f5f0ed", color: "#c0b8b8", cursor: "not-allowed" }
+                ? { backgroundColor: "#FFC533", color: "#222222", boxShadow: "0 4px 14px rgba(255,197,51,0.28)" }
+                : { backgroundColor: "#f5f0ed", color: "#C0B0A0", cursor: "not-allowed" }
             }
           >
             {allSettled ? "Done" : "Scraping…"}
@@ -496,8 +496,8 @@ export default function CompetitionBrandsPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all"
               style={{
                 borderRadius: 22,
-                border: "1px solid #d57282",
-                color: "#d57282",
+                border: "1px solid #FFC533",
+                color: "#FFC533",
                 backgroundColor: "#ffffff",
               }}
             >
@@ -505,7 +505,7 @@ export default function CompetitionBrandsPage() {
               Scrape Product Data
               <span
                 className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}
+                style={{ backgroundColor: "#FFEDAB", color: "#FFC533" }}
               >
                 {selectedIds.size}
               </span>
@@ -517,9 +517,9 @@ export default function CompetitionBrandsPage() {
             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all"
             style={{
               borderRadius: 22,
-              backgroundColor: "#d57282",
-              color: "#ffffff",
-              boxShadow: "0 4px 14px rgba(213,114,130,0.28)",
+              backgroundColor: "#FFC533",
+              color: "#222222",
+              boxShadow: "0 4px 14px rgba(255,197,51,0.28)",
             }}
           >
             <Plus size={14} />
@@ -531,16 +531,16 @@ export default function CompetitionBrandsPage() {
       {/* Table card */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ backgroundColor: "#ffffff", boxShadow: "0 2px 16px rgba(213,114,130,0.07)", border: "1px solid #E2E2E2" }}
+        style={{ backgroundColor: "#ffffff", boxShadow: "0 2px 16px rgba(255,197,51,0.07)", border: "1px solid #E2E2E2" }}
       >
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={22} className="animate-spin" style={{ color: "#d57282" }} />
+            <Loader2 size={22} className="animate-spin" style={{ color: "#FFC533" }} />
           </div>
         ) : brands.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "#f9e8eb" }}>
-              <GitCompare size={20} style={{ color: "#d57282" }} />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "#FFEDAB" }}>
+              <GitCompare size={20} style={{ color: "#FFC533" }} />
             </div>
             <p className="text-sm font-medium" style={{ color: "#525252" }}>No competitor brands yet</p>
             <p className="text-xs" style={{ color: "#8a8a8a" }}>Click &ldquo;Add URL&rdquo; to start tracking a competitor</p>
@@ -550,10 +550,10 @@ export default function CompetitionBrandsPage() {
           <div style={{ minWidth: "700px" }}>
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ borderBottom: "1px solid #f0eae6" }}>
+              <tr style={{ borderBottom: "1px solid #F0EBE0" }}>
                 {/* Select-all checkbox */}
                 <th className="px-4 py-3 w-10">
-                  <button onClick={toggleAll} className="flex items-center justify-center" style={{ color: allSelected ? "#d57282" : someSelected ? "#d57282" : "#c0b8b8" }}>
+                  <button onClick={toggleAll} className="flex items-center justify-center" style={{ color: allSelected ? "#FFC533" : someSelected ? "#FFC533" : "#C0B0A0" }}>
                     {allSelected ? <CheckSquare size={16} /> : someSelected ? <CheckSquare size={16} style={{ opacity: 0.5 }} /> : <Square size={16} />}
                   </button>
                 </th>
@@ -569,13 +569,13 @@ export default function CompetitionBrandsPage() {
                 ) : (
                   <tr
                     key={brand.id}
-                    style={{ borderBottom: "1px solid #f5f5f5", backgroundColor: selectedIds.has(brand.id) ? "#fffbf6" : "" }}
-                    onMouseEnter={(e) => { if (!selectedIds.has(brand.id)) (e.currentTarget as HTMLElement).style.backgroundColor = "#fffbf6"; }}
+                    style={{ borderBottom: "1px solid #f5f5f5", backgroundColor: selectedIds.has(brand.id) ? "#FFFBF1" : "" }}
+                    onMouseEnter={(e) => { if (!selectedIds.has(brand.id)) (e.currentTarget as HTMLElement).style.backgroundColor = "#FFFBF1"; }}
                     onMouseLeave={(e) => { if (!selectedIds.has(brand.id)) (e.currentTarget as HTMLElement).style.backgroundColor = ""; }}
                   >
                     {/* Checkbox */}
                     <td className="px-4 py-3.5">
-                      <button onClick={() => toggleSelect(brand.id)} className="flex items-center justify-center" style={{ color: selectedIds.has(brand.id) ? "#d57282" : "#c0b8b8" }}>
+                      <button onClick={() => toggleSelect(brand.id)} className="flex items-center justify-center" style={{ color: selectedIds.has(brand.id) ? "#FFC533" : "#C0B0A0" }}>
                         {selectedIds.has(brand.id) ? <CheckSquare size={16} /> : <Square size={16} />}
                       </button>
                     </td>
@@ -586,7 +586,7 @@ export default function CompetitionBrandsPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1.5 w-fit"
-                        style={{ color: "#d57282" }}
+                        style={{ color: "#FFC533" }}
                         onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.textDecoration = "underline")}
                         onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.textDecoration = "")}
                       >
@@ -596,15 +596,15 @@ export default function CompetitionBrandsPage() {
                     </td>
                     <td className="px-4 py-3.5">
                       {brand.products_count > 0 ? (
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#f9e8eb", color: "#d57282" }}>
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#FFEDAB", color: "#FFC533" }}>
                           {brand.products_count.toLocaleString()}
                         </span>
                       ) : (
-                        <span style={{ color: "#c0b8b8" }}>—</span>
+                        <span style={{ color: "#C0B0A0" }}>—</span>
                       )}
                     </td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs" style={{ color: "#8a8a8a" }}>
-                      {brand.last_synced ? formatDateTime(brand.last_synced) : <span style={{ color: "#c0b8b8" }}>Never</span>}
+                      {brand.last_synced ? formatDateTime(brand.last_synced) : <span style={{ color: "#C0B0A0" }}>Never</span>}
                     </td>
                     <td className="px-4 py-3.5 whitespace-nowrap" style={{ color: "#8a8a8a" }}>
                       {formatDate(brand.created_at)}

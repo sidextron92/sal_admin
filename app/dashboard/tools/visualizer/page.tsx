@@ -84,7 +84,7 @@ function parseDevice(userAgent: string | null): { label: string; icon: "mobile" 
 function getProductTypeBadge(type: string | null): { background: string; color: string } {
   if (!type) return { background: "#f5f0ed", color: "#8a8a8a" };
   const normalized = type.toLowerCase();
-  if (normalized === "bedsheet") return { background: "#f9e8eb", color: "#d57282" };
+  if (normalized === "bedsheet") return { background: "#FFEDAB", color: "#FFC533" };
   if (normalized === "comforter") return { background: "#e8f5ff", color: "#1a8fde" };
   if (normalized === "towel") return { background: "#f0faf4", color: "#27a559" };
   if (normalized === "bedcovers") return { background: "#fff3e8", color: "#d4600a" };
@@ -155,16 +155,16 @@ function SkeletonCard() {
       }}
     >
       {/* 3-col image strip */}
-      <div className="grid grid-cols-3" style={{ borderBottom: "1px solid #f0eae6" }}>
+      <div className="grid grid-cols-3" style={{ borderBottom: "1px solid #F0EBE0" }}>
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-36 flex flex-col items-center justify-center" style={{ background: "#ede8e5", borderRight: i < 2 ? "1px solid #f0eae6" : undefined }}>
+          <div key={i} className="h-36 flex flex-col items-center justify-center" style={{ background: "#ede8e5", borderRight: i < 2 ? "1px solid #F0EBE0" : undefined }}>
             <div className="w-6 h-6 rounded-lg mb-1" style={{ background: "#e0d8d4" }} />
             <div className="w-10 h-2 rounded" style={{ background: "#e0d8d4" }} />
           </div>
         ))}
       </div>
       <div className="p-4 space-y-2">
-        <div className="h-4 rounded-lg w-3/4" style={{ background: "#f0eae6" }} />
+        <div className="h-4 rounded-lg w-3/4" style={{ background: "#F0EBE0" }} />
         <div className="h-3 rounded-lg w-1/3" style={{ background: "#f5f0ed" }} />
         <div className="h-3 rounded-lg w-1/2" style={{ background: "#f5f0ed" }} />
       </div>
@@ -188,7 +188,7 @@ function ImageThumbnail({ url, label, onPreview }: ImageThumbnailProps) {
       {/* Label */}
       <div
         className="text-center py-1"
-        style={{ fontSize: 10, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em", color: "#b8a0a0", background: "#faf7f5" }}
+        style={{ fontSize: 10, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em", color: "#B8A090", background: "#FFF8ED" }}
       >
         {label}
       </div>
@@ -198,8 +198,8 @@ function ImageThumbnail({ url, label, onPreview }: ImageThumbnailProps) {
           className="h-32 flex flex-col items-center justify-center gap-1"
           style={{ background: "#f5f0ed" }}
         >
-          <ImageIcon size={18} style={{ color: "#b8a0a0" }} />
-          <span style={{ fontSize: 10, color: "#c4b0b0" }}>No image</span>
+          <ImageIcon size={18} style={{ color: "#B8A090" }} />
+          <span style={{ fontSize: 10, color: "#C4B0A0" }}>No image</span>
         </div>
       ) : (
         <button
@@ -247,11 +247,11 @@ function VisualizationCard({ item, onPreview }: VisualizationCardProps) {
       }}
     >
       {/* Images — 3 columns: Product → Room → Result */}
-      <div className="grid grid-cols-3" style={{ borderBottom: "1px solid #f0eae6" }}>
-        <div style={{ borderRight: "1px solid #f0eae6" }}>
+      <div className="grid grid-cols-3" style={{ borderBottom: "1px solid #F0EBE0" }}>
+        <div style={{ borderRight: "1px solid #F0EBE0" }}>
           <ImageThumbnail url={item.product_image_url} label="Product" onPreview={onPreview} />
         </div>
-        <div style={{ borderRight: "1px solid #f0eae6" }}>
+        <div style={{ borderRight: "1px solid #F0EBE0" }}>
           <ImageThumbnail url={item.room_image_url} label="Room" onPreview={onPreview} />
         </div>
         <div>
@@ -285,7 +285,7 @@ function VisualizationCard({ item, onPreview }: VisualizationCardProps) {
         </div>
 
         {/* Price */}
-        <p style={{ fontSize: 13, fontWeight: 500, color: "#d57282" }}>
+        <p style={{ fontSize: 13, fontWeight: 500, color: "#FFC533" }}>
           {formatPrice(item.product_price)}
         </p>
 
@@ -313,16 +313,16 @@ function VisualizationCard({ item, onPreview }: VisualizationCardProps) {
         )}
 
         {/* Footer: device + time */}
-        <div className="flex items-center justify-between mt-auto pt-2" style={{ borderTop: "1px solid #f0eae6" }}>
+        <div className="flex items-center justify-between mt-auto pt-2" style={{ borderTop: "1px solid #F0EBE0" }}>
           <div className="flex items-center gap-1">
             {device.icon === "mobile" ? (
-              <Smartphone size={13} style={{ color: "#b8a0a0" }} />
+              <Smartphone size={13} style={{ color: "#B8A090" }} />
             ) : (
-              <Monitor size={13} style={{ color: "#b8a0a0" }} />
+              <Monitor size={13} style={{ color: "#B8A090" }} />
             )}
-            <span style={{ fontSize: 12, color: "#b8a0a0" }}>{device.label}</span>
+            <span style={{ fontSize: 12, color: "#B8A090" }}>{device.label}</span>
           </div>
-          <span style={{ fontSize: 12, color: "#b8a0a0" }}>
+          <span style={{ fontSize: 12, color: "#B8A090" }}>
             {formatRelativeTime(item.created_at)}
           </span>
         </div>
@@ -401,14 +401,14 @@ function Dropdown({ value, onChange, options, placeholder }: DropdownProps) {
               style={{
                 padding: "8px 14px",
                 fontSize: 14,
-                color: opt.value === value ? "#d57282" : "#525252",
+                color: opt.value === value ? "#FFC533" : "#525252",
                 fontWeight: opt.value === value ? 600 : 400,
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
                 display: "block",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#f9e8eb")}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#FFEDAB")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               {opt.label}
@@ -542,7 +542,7 @@ export default function VisualizerPage() {
             <Search
               size={15}
               className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ color: "#b8a0a0" }}
+              style={{ color: "#B8A090" }}
             />
             <input
               type="text"
@@ -560,7 +560,7 @@ export default function VisualizerPage() {
                 outline: "none",
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#d57282";
+                e.currentTarget.style.borderColor = "#FFC533";
                 e.currentTarget.style.boxShadow = "0 0 0 3px rgba(213,114,130,0.1)";
               }}
               onBlur={(e) => {
@@ -608,7 +608,7 @@ export default function VisualizerPage() {
                 cursor: "pointer",
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#d57282";
+                e.currentTarget.style.borderColor = "#FFC533";
                 e.currentTarget.style.boxShadow = "0 0 0 3px rgba(213,114,130,0.1)";
               }}
               onBlur={(e) => {
@@ -648,7 +648,7 @@ export default function VisualizerPage() {
                 cursor: "pointer",
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#d57282";
+                e.currentTarget.style.borderColor = "#FFC533";
                 e.currentTarget.style.boxShadow = "0 0 0 3px rgba(213,114,130,0.1)";
               }}
               onBlur={(e) => {
@@ -674,7 +674,7 @@ export default function VisualizerPage() {
                 cursor: "pointer",
                 whiteSpace: "nowrap",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#f9e8eb")}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#FFEDAB")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
             >
               <X size={13} />
@@ -703,9 +703,9 @@ export default function VisualizerPage() {
         >
           <div
             className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
-            style={{ background: "#f9e8eb" }}
+            style={{ background: "#FFEDAB" }}
           >
-            <ImageIcon size={22} style={{ color: "#d57282" }} />
+            <ImageIcon size={22} style={{ color: "#FFC533" }} />
           </div>
           <p style={{ fontSize: 14, fontWeight: 600, color: "#525252" }}>
             No visualizations found
@@ -720,8 +720,8 @@ export default function VisualizerPage() {
               onClick={handleReset}
               className="mt-4"
               style={{
-                background: "#d57282",
-                color: "#fff",
+                background: "#FFC533",
+                color: "#222222",
                 borderRadius: 22,
                 padding: "9px 20px",
                 fontSize: 13,
@@ -731,11 +731,11 @@ export default function VisualizerPage() {
                 cursor: "pointer",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#ce5a56";
+                e.currentTarget.style.background = "#E5A800";
                 e.currentTarget.style.boxShadow = "0 6px 18px rgba(206,90,86,0.35)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#d57282";
+                e.currentTarget.style.background = "#FFC533";
                 e.currentTarget.style.boxShadow = "0 4px 14px rgba(213,114,130,0.28)";
               }}
             >
@@ -786,7 +786,7 @@ export default function VisualizerPage() {
                 cursor: page === 1 ? "not-allowed" : "pointer",
               }}
               onMouseEnter={(e) => {
-                if (page !== 1) e.currentTarget.style.background = "#f9e8eb";
+                if (page !== 1) e.currentTarget.style.background = "#FFEDAB";
               }}
               onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
             >
@@ -798,8 +798,8 @@ export default function VisualizerPage() {
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                background: "#f9e8eb",
-                color: "#d57282",
+                background: "#FFEDAB",
+                color: "#FFC533",
               }}
             >
               {page} / {totalPages}
@@ -820,7 +820,7 @@ export default function VisualizerPage() {
                 cursor: page === totalPages ? "not-allowed" : "pointer",
               }}
               onMouseEnter={(e) => {
-                if (page !== totalPages) e.currentTarget.style.background = "#f9e8eb";
+                if (page !== totalPages) e.currentTarget.style.background = "#FFEDAB";
               }}
               onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
             >

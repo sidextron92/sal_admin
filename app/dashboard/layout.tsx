@@ -33,7 +33,7 @@ export default function DashboardLayout({
   const title = PAGE_TITLES[pathname] ?? "Control Centre";
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "#fffbf6" }}>
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "#FFFBF1" }}>
       <Sidebar
         collapsed={collapsed}
         onToggle={() => setCollapsed((c) => !c)}

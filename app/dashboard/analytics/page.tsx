@@ -65,10 +65,10 @@ function formatDate(d: string) {
 }
 
 const CHANNEL_COLORS: Record<string, string> = {
-  Shopify: "#d57282",
+  Shopify: "#FFC533",
   Amazon: "#f4a56e",
   Offline: "#8ec9b0",
-  Unknown: "#c4b0b0",
+  Unknown: "#C4B0A0",
 };
 
 const PAYMENT_COLORS: Record<string, string> = {
@@ -90,7 +90,7 @@ function ToggleGroup<T extends string>({
   return (
     <div
       className="flex rounded-lg overflow-hidden"
-      style={{ border: "1px solid #E2E2E2", backgroundColor: "#fffbf6" }}
+      style={{ border: "1px solid #E2E2E2", backgroundColor: "#FFFBF1" }}
     >
       {options.map((opt) => (
         <button
@@ -98,8 +98,8 @@ function ToggleGroup<T extends string>({
           onClick={() => onChange(opt.value)}
           className="px-3 py-1 text-xs font-medium transition-colors"
           style={{
-            backgroundColor: value === opt.value ? "#d57282" : "transparent",
-            color: value === opt.value ? "#ffffff" : "#8a8a8a",
+            backgroundColor: value === opt.value ? "#FFC533" : "transparent",
+            color: value === opt.value ? "#222222" : "#8a8a8a",
           }}
         >
           {opt.label}
@@ -163,7 +163,7 @@ function HBarChart({
 }) {
   if (!data.length) {
     return (
-      <div className="flex items-center justify-center h-48 text-xs" style={{ color: "#c4b0b0" }}>
+      <div className="flex items-center justify-center h-48 text-xs" style={{ color: "#C4B0A0" }}>
         No data for this period
       </div>
     );
@@ -200,7 +200,7 @@ function HBarChart({
             tickFmt ? [tickFmt(value as number), ""] : [value, ""]
           }
         />
-        <Bar dataKey={dataKey} fill="#d57282" radius={[0, 4, 4, 0]} />
+        <Bar dataKey={dataKey} fill="#FFC533" radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -235,12 +235,12 @@ function DonutChart({
             startAngle={90}
             endAngle={-270}
             strokeWidth={2}
-            stroke="#fffbf6"
+            stroke="#FFFBF1"
           >
             {data.map((entry) => (
               <Cell
                 key={entry.name}
-                fill={colors[entry.name] ?? "#c4b0b0"}
+                fill={colors[entry.name] ?? "#C4B0A0"}
               />
             ))}
           </Pie>
@@ -266,7 +266,7 @@ function DonutChart({
               <div className="flex items-center gap-2">
                 <span
                   className="inline-block w-2.5 h-2.5 rounded-sm shrink-0"
-                  style={{ backgroundColor: colors[entry.name] ?? "#c4b0b0" }}
+                  style={{ backgroundColor: colors[entry.name] ?? "#C4B0A0" }}
                 />
                 <span style={{ color: "#525252" }}>{entry.name}</span>
               </div>

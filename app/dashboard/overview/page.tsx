@@ -1,6 +1,6 @@
 import { ShoppingBag, IndianRupee, TrendingUp, Users } from "lucide-react";
 
-const ICON_STYLE = { color: "#d57282" } as const;
+const ICON_STYLE = { color: "#FFC533" } as const;
 import MetricCard from "@/components/dashboard/MetricCard";
 import OverviewCharts from "@/components/dashboard/OverviewCharts";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -136,7 +136,7 @@ export default async function OverviewPage() {
               style={{
                 width: 22,
                 height: 2,
-                backgroundColor: "#d57282",
+                backgroundColor: "#FFC533",
                 borderRadius: 1,
                 opacity: 0.7,
                 flexShrink: 0,
@@ -215,7 +215,7 @@ export default async function OverviewPage() {
         className="bg-white rounded-2xl p-5 border"
         style={{
           borderColor: "#E2E2E2",
-          boxShadow: "0 2px 16px rgba(213, 114, 130, 0.07)",
+          boxShadow: "0 2px 16px rgba(255, 197, 51, 0.07)",
         }}
       >
         <div className="flex items-center gap-2 mb-5">
@@ -223,7 +223,7 @@ export default async function OverviewPage() {
             style={{
               width: 3,
               height: 14,
-              backgroundColor: "#d57282",
+              backgroundColor: "#FFC533",
               borderRadius: 2,
               flexShrink: 0,
             }}

@@ -118,7 +118,7 @@ function UploadResultModal({
         className="w-full max-w-lg rounded-2xl overflow-hidden"
         style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}
       >
-        <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: "1px solid #f0eae6" }}>
+        <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: "1px solid #F0EBE0" }}>
           <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>Upload Complete</h3>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#f5f0ed]">
             <X size={16} style={{ color: "#8a8a8a" }} />
@@ -144,14 +144,14 @@ function UploadResultModal({
                 <p className="text-xs" style={{ color: "#e05252" }}>Errors</p>
               </div>
             </div>
-            <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ backgroundColor: "#faf7f5" }}>
+            <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ backgroundColor: "#FFF8ED" }}>
               <SkipForward size={18} style={{ color: "#8a8a8a" }} />
               <div>
                 <p className="text-lg font-bold" style={{ color: "#525252" }}>{summary.skipped}</p>
                 <p className="text-xs" style={{ color: "#8a8a8a" }}>Skipped (no changes)</p>
               </div>
             </div>
-            <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ backgroundColor: "#faf7f5" }}>
+            <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ backgroundColor: "#FFF8ED" }}>
               <div>
                 <p className="text-xs font-medium mb-1" style={{ color: "#8a8a8a" }}>Breakdown</p>
                 <p className="text-xs" style={{ color: "#525252" }}>Cost: {summary.updated_cost} · Inventory: {summary.updated_inventory}</p>
@@ -180,7 +180,7 @@ function UploadResultModal({
           <button
             onClick={onClose}
             className="w-full py-2.5 rounded-xl text-sm font-semibold"
-            style={{ backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }}
+            style={{ backgroundColor: "#FFC533", color: "#222222", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }}
           >
             Done
           </button>
@@ -256,7 +256,7 @@ function BulkOperationButton({ onUploaded }: { onUploaded: () => void }) {
           onClick={() => setOpen((v) => !v)}
           disabled={downloading || uploading}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-100"
-          style={{ backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)", opacity: downloading || uploading ? 0.7 : 1 }}
+          style={{ backgroundColor: "#FFC533", color: "#222222", boxShadow: "0 4px 14px rgba(213,114,130,0.28)", opacity: downloading || uploading ? 0.7 : 1 }}
         >
           {uploading ? "Uploading…" : downloading ? "Downloading…" : "Bulk Operation"}
           <ChevronDownIcon size={13} />
@@ -269,19 +269,19 @@ function BulkOperationButton({ onUploaded }: { onUploaded: () => void }) {
           >
             <button
               onClick={handleDownload}
-              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#faf7f5] transition-colors"
+              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#FFF8ED] transition-colors"
               style={{ color: "#525252" }}
             >
-              <Download size={14} style={{ color: "#d57282" }} />
+              <Download size={14} style={{ color: "#FFC533" }} />
               Download File
             </button>
-            <div style={{ borderTop: "1px solid #f0eae6" }} />
+            <div style={{ borderTop: "1px solid #F0EBE0" }} />
             <button
               onClick={() => { setOpen(false); fileInputRef.current?.click(); }}
-              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#faf7f5] transition-colors"
+              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-[#FFF8ED] transition-colors"
               style={{ color: "#525252" }}
             >
-              <Upload size={14} style={{ color: "#d57282" }} />
+              <Upload size={14} style={{ color: "#FFC533" }} />
               Upload File
             </button>
           </div>
@@ -375,12 +375,12 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
         style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-5 pb-4" style={{ borderBottom: "1px solid #f0eae6" }}>
+        <div className="flex items-start justify-between px-6 pt-5 pb-4" style={{ borderBottom: "1px solid #F0EBE0" }}>
           <div>
             <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>Update Inventory</h3>
             <p className="text-xs mt-0.5" style={{ color: "#8a8a8a" }}>
               {productTitle}
-              {variantLabel && <> · <span style={{ color: "#d57282" }}>{variantLabel}</span></>}
+              {variantLabel && <> · <span style={{ color: "#FFC533" }}>{variantLabel}</span></>}
             </p>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#f5f0ed]">
@@ -390,7 +390,7 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
 
         <div className="px-6 py-5 space-y-5">
           {/* Current snapshot */}
-          <div className="rounded-xl px-4 py-3 space-y-2" style={{ backgroundColor: "#faf7f5", border: "1px solid #f0eae6" }}>
+          <div className="rounded-xl px-4 py-3 space-y-2" style={{ backgroundColor: "#FFF8ED", border: "1px solid #F0EBE0" }}>
             <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8a8a8a" }}>Current</p>
             <div className="grid grid-cols-3 gap-3">
               {[
@@ -417,7 +417,7 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
                   <button
                     onClick={() => setNewVirtual((v) => clampInt(v - 1))}
                     className="px-3 py-2 text-lg font-light hover:bg-[#f5f0ed] transition-colors"
-                    style={{ color: "#d57282" }}
+                    style={{ color: "#FFC533" }}
                   >−</button>
                   <input
                     type="number"
@@ -431,7 +431,7 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
                   <button
                     onClick={() => setNewVirtual((v) => v + 1)}
                     className="px-3 py-2 text-lg font-light hover:bg-[#f5f0ed] transition-colors"
-                    style={{ color: "#d57282" }}
+                    style={{ color: "#FFC533" }}
                   >+</button>
                 </div>
               </div>
@@ -443,7 +443,7 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
                   <button
                     onClick={() => setNewPhysical((v) => clampInt(v - 1))}
                     className="px-3 py-2 text-lg font-light hover:bg-[#f5f0ed] transition-colors"
-                    style={{ color: "#d57282" }}
+                    style={{ color: "#FFC533" }}
                   >−</button>
                   <input
                     type="number"
@@ -457,16 +457,16 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
                   <button
                     onClick={() => setNewPhysical((v) => v + 1)}
                     className="px-3 py-2 text-lg font-light hover:bg-[#f5f0ed] transition-colors"
-                    style={{ color: "#d57282" }}
+                    style={{ color: "#FFC533" }}
                   >+</button>
                 </div>
               </div>
             </div>
 
             {/* Calculated total */}
-            <div className="flex items-center justify-between px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#f9e8eb" }}>
-              <span className="text-xs font-medium" style={{ color: "#d57282" }}>New Total</span>
-              <span className="text-sm font-bold" style={{ color: "#d57282" }}>{newTotal}</span>
+            <div className="flex items-center justify-between px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#FFEDAB" }}>
+              <span className="text-xs font-medium" style={{ color: "#FFC533" }}>New Total</span>
+              <span className="text-sm font-bold" style={{ color: "#FFC533" }}>{newTotal}</span>
             </div>
           </div>
 
@@ -504,7 +504,7 @@ function InventoryModal({ variant, onClose, onSaved }: InventoryModalProps) {
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
               style={
                 hasChange && !saving
-                  ? { backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }
+                  ? { backgroundColor: "#FFC533", color: "#222222", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }
                   : { backgroundColor: "#f0e8ea", color: "#c0a0a8", cursor: "not-allowed" }
               }
             >
@@ -561,7 +561,7 @@ function CostCell({ variantId, initialCost, onSaved }: { variantId: string; init
             if (e.key === "Escape") { setValue(String(initialCost)); setEditing(false); }
           }}
           className="w-16 text-xs font-medium outline-none rounded px-1 py-0.5"
-          style={{ border: "1px solid #d57282", color: "#525252" }}
+          style={{ border: "1px solid #FFC533", color: "#525252" }}
           disabled={saving}
           autoFocus
         />
@@ -575,7 +575,7 @@ function CostCell({ variantId, initialCost, onSaved }: { variantId: string; init
   return (
     <button onClick={() => { setValue(String(initialCost)); setEditing(true); }} className="flex items-center gap-1 group">
       <span className="text-xs font-medium" style={{ color: "#525252" }}>{formatPrice(initialCost)}</span>
-      <Pencil size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#d57282" }} />
+      <Pencil size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#FFC533" }} />
     </button>
   );
 }
@@ -649,16 +649,16 @@ function InventoryLogModal({
         style={{ backgroundColor: "#ffffff", boxShadow: "0 8px 40px rgba(0,0,0,0.18)", maxHeight: "85vh" }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-5 pb-4 shrink-0" style={{ borderBottom: "1px solid #f0eae6" }}>
+        <div className="flex items-start justify-between px-6 pt-5 pb-4 shrink-0" style={{ borderBottom: "1px solid #F0EBE0" }}>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl" style={{ backgroundColor: "#f9e8eb" }}>
-              <ClipboardList size={14} style={{ color: "#d57282" }} />
+            <div className="p-2 rounded-xl" style={{ backgroundColor: "#FFEDAB" }}>
+              <ClipboardList size={14} style={{ color: "#FFC533" }} />
             </div>
             <div>
               <h3 className="text-sm font-semibold" style={{ color: "#525252" }}>Inventory Log</h3>
               <p className="text-xs mt-0.5" style={{ color: "#8a8a8a" }}>
                 {productTitle}
-                {variantLabel && <> · <span style={{ color: "#d57282" }}>{variantLabel}</span></>}
+                {variantLabel && <> · <span style={{ color: "#FFC533" }}>{variantLabel}</span></>}
               </p>
             </div>
           </div>
@@ -671,7 +671,7 @@ function InventoryLogModal({
         <div className="overflow-auto flex-1">
           {loading && (
             <div className="py-12 flex flex-col items-center gap-3" style={{ color: "#8a8a8a" }}>
-              <div className="w-7 h-7 rounded-full border-2 animate-spin" style={{ borderColor: "#d57282", borderTopColor: "transparent" }} />
+              <div className="w-7 h-7 rounded-full border-2 animate-spin" style={{ borderColor: "#FFC533", borderTopColor: "transparent" }} />
               <p className="text-sm">Loading log…</p>
             </div>
           )}
@@ -690,7 +690,7 @@ function InventoryLogModal({
           {!loading && !error && logs.length > 0 && (
             <table className="w-full text-xs" style={{ borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ backgroundColor: "#faf7f5", borderBottom: "1px solid #f0eae6" }}>
+                <tr style={{ backgroundColor: "#FFF8ED", borderBottom: "1px solid #F0EBE0" }}>
                   {["Timestamp", "Changed By", "Δ Virtual", "Δ Physical", "Δ Total", "New Total", "Remarks"].map((h) => (
                     <th
                       key={h}
@@ -706,8 +706,8 @@ function InventoryLogModal({
                 {logs.map((log, i) => (
                   <tr
                     key={i}
-                    className="hover:bg-[#fffbf6] transition-colors"
-                    style={{ borderBottom: "1px solid #f0eae6" }}
+                    className="hover:bg-[#FFFBF1] transition-colors"
+                    style={{ borderBottom: "1px solid #F0EBE0" }}
                   >
                     <td className="px-4 py-3 whitespace-nowrap" style={{ color: "#525252" }}>
                       {formatTs(log.changed_at)}
@@ -720,7 +720,7 @@ function InventoryLogModal({
                     <td className="px-4 py-3 text-center">{deltaCell(log.delta_virtual)}</td>
                     <td className="px-4 py-3 text-center">{deltaCell(log.delta_physical)}</td>
                     <td className="px-4 py-3 text-center">{deltaCell(log.delta_total)}</td>
-                    <td className="px-4 py-3 text-center font-semibold" style={{ color: "#d57282" }}>{log.new_total}</td>
+                    <td className="px-4 py-3 text-center font-semibold" style={{ color: "#FFC533" }}>{log.new_total}</td>
                     <td className="px-4 py-3 max-w-[180px]" style={{ color: "#8a8a8a" }}>
                       {log.remarks ? <span className="italic">{log.remarks}</span> : <span style={{ color: "#d0d0d0" }}>—</span>}
                     </td>
@@ -732,11 +732,11 @@ function InventoryLogModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 shrink-0" style={{ borderTop: "1px solid #f0eae6" }}>
+        <div className="px-6 py-4 shrink-0" style={{ borderTop: "1px solid #F0EBE0" }}>
           <button
             onClick={onClose}
             className="w-full py-2.5 rounded-xl text-sm font-semibold"
-            style={{ backgroundColor: "#d57282", color: "#ffffff", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }}
+            style={{ backgroundColor: "#FFC533", color: "#222222", boxShadow: "0 4px 14px rgba(213,114,130,0.28)" }}
           >
             Close
           </button>
@@ -770,10 +770,10 @@ function RowMoreMenu({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="p-1.5 rounded-lg hover:bg-[#f9e8eb] transition-colors"
+        className="p-1.5 rounded-lg hover:bg-[#FFEDAB] transition-colors"
         title="More options"
       >
-        <MoreHorizontal size={13} style={{ color: "#d57282" }} />
+        <MoreHorizontal size={13} style={{ color: "#FFC533" }} />
       </button>
 
       {open && (
@@ -783,19 +783,19 @@ function RowMoreMenu({
         >
           <button
             onClick={() => { setOpen(false); onUpdateInventory(); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[#faf7f5] transition-colors"
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[#FFF8ED] transition-colors"
             style={{ color: "#525252" }}
           >
-            <Boxes size={13} style={{ color: "#d57282" }} />
+            <Boxes size={13} style={{ color: "#FFC533" }} />
             Update Inventory
           </button>
-          <div style={{ borderTop: "1px solid #f0eae6" }} />
+          <div style={{ borderTop: "1px solid #F0EBE0" }} />
           <button
             onClick={() => { setOpen(false); onViewLog(); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[#faf7f5] transition-colors"
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[#FFF8ED] transition-colors"
             style={{ color: "#525252" }}
           >
-            <ClipboardList size={13} style={{ color: "#d57282" }} />
+            <ClipboardList size={13} style={{ color: "#FFC533" }} />
             View Inventory Log
           </button>
         </div>
@@ -816,16 +816,16 @@ function VariantTableRow({ variant, onRefresh }: { variant: VariantRow; onRefres
   return (
     <>
       <div
-        className="grid items-center px-5 py-3 hover:bg-[#fffbf6] transition-colors duration-100"
+        className="grid items-center px-5 py-3 hover:bg-[#FFFBF1] transition-colors duration-100"
         style={{ gridTemplateColumns: COL }}
       >
         {/* Image */}
-        <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0" style={{ backgroundColor: "#f9e8eb" }}>
+        <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0" style={{ backgroundColor: "#FFEDAB" }}>
           {p.image_url ? (
             <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Package size={12} style={{ color: "#d57282" }} />
+              <Package size={12} style={{ color: "#FFC533" }} />
             </div>
           )}
         </div>
@@ -978,7 +978,7 @@ export default function InventoryPage() {
               className="px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-100"
               style={
                 stockStatus === v
-                  ? { backgroundColor: "#d57282", color: "#ffffff" }
+                  ? { backgroundColor: "#FFC533", color: "#222222" }
                   : { backgroundColor: "#ffffff", border: "1px solid #E2E2E2", color: "#525252" }
               }
             >
@@ -1032,7 +1032,7 @@ export default function InventoryPage() {
         <div style={{ minWidth: "700px" }}>
         <div
           className="grid text-xs font-semibold uppercase tracking-wide px-5 py-3"
-          style={{ gridTemplateColumns: COL, borderBottom: "1px solid #f0eae6", color: "#8a8a8a" }}
+          style={{ gridTemplateColumns: COL, borderBottom: "1px solid #F0EBE0", color: "#8a8a8a" }}
         >
           <span />
           <span className="px-3">Product / Variant</span>
@@ -1045,7 +1045,7 @@ export default function InventoryPage() {
 
         {loading ? (
           <div className="py-16 flex flex-col items-center gap-3" style={{ color: "#8a8a8a" }}>
-            <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: "#d57282", borderTopColor: "transparent" }} />
+            <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: "#FFC533", borderTopColor: "transparent" }} />
             <p className="text-sm">Loading inventory…</p>
           </div>
         ) : variants.length === 0 ? (
@@ -1054,7 +1054,7 @@ export default function InventoryPage() {
             <p className="text-sm">No variants found</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "#f0eae6" }}>
+          <div className="divide-y" style={{ borderColor: "#F0EBE0" }}>
             {variants.map((v) => (
               <VariantTableRow key={v.variant_id} variant={v} onRefresh={fetchVariants} />
             ))}
@@ -1064,7 +1064,7 @@ export default function InventoryPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3.5 text-sm" style={{ borderTop: "1px solid #f0eae6" }}>
+          <div className="flex items-center justify-between px-5 py-3.5 text-sm" style={{ borderTop: "1px solid #F0EBE0" }}>
             <span style={{ color: "#8a8a8a" }}>Page {page} of {totalPages} · {total} variants</span>
             <div className="flex gap-2">
               <button
