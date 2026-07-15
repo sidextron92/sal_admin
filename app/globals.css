@@ -118,3 +118,42 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* ── Shimmer loading animation ─────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #F0EBE0 0%,
+    #F5F0E8 25%,
+    #F0EBE0 50%,
+    #F5F0E8 75%,
+    #F0EBE0 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+.shimmer-circle {
+  background: linear-gradient(
+    90deg,
+    #F0EBE0 0%,
+    #F5F0E8 25%,
+    #F0EBE0 50%,
+    #F5F0E8 75%,
+    #F0EBE0 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 9999px;
+}
