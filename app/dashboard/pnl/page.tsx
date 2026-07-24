@@ -839,10 +839,10 @@ export default function PnLPage() {
   function pillStyle(active: boolean) {
     return active
       ? {
-          backgroundColor: "#d57282",
-          color: "#ffffff",
-          border: "1px solid #d57282",
-          boxShadow: "0 2px 8px rgba(213,114,130,0.28)",
+          backgroundColor: "#FFC533",
+          color: "#222222",
+          border: "1px solid #FFC533",
+          boxShadow: "0 2px 8px rgba(255,197,51,0.28)",
         }
       : {
           backgroundColor: "#ffffff",
