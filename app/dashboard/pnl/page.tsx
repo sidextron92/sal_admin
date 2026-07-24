@@ -16,6 +16,8 @@ import { TrendingUp, AlertCircle, Info } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
+type Channel = "ALL" | "Shopify" | "Amazon" | "Offline";
+
 interface PnLRevenue {
   gross_revenue: number;
   total_discounts: number;
@@ -62,7 +64,7 @@ interface PnLResponse {
   expenses: PnLExpenses;
   rto: PnLRto;
   trend: TrendMonth[];
-  meta: { date_from: string; date_to: string; cogs_note: string };
+  meta: { date_from: string; date_to: string; channel: string; cogs_note: string };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -824,6 +826,7 @@ function PnLSkeleton() {
 
 export default function PnLPage() {
   const [selectedMonth, setSelectedMonth] = useState(currentMonthValue);
+  const [channel, setChannel] = useState<Channel>("ALL");
 
   const [data, setData] = useState<PnLResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -831,12 +834,29 @@ export default function PnLPage() {
 
   const abortRef = useRef<AbortController | null>(null);
 
+  const CHANNELS: Channel[] = ["ALL", "Shopify", "Amazon", "Offline"];
+
+  function pillStyle(active: boolean) {
+    return active
+      ? {
+          backgroundColor: "#d57282",
+          color: "#ffffff",
+          border: "1px solid #d57282",
+          boxShadow: "0 2px 8px rgba(213,114,130,0.28)",
+        }
+      : {
+          backgroundColor: "#ffffff",
+          color: "#525252",
+          border: "1px solid #E2E2E2",
+        };
+  }
+
   useEffect(() => {
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
-    const params = new URLSearchParams({ month: selectedMonth });
+    const params = new URLSearchParams({ month: selectedMonth, channel });
 
     setLoading(true);
     setError(null);
@@ -859,7 +879,7 @@ export default function PnLPage() {
       });
 
     return () => ctrl.abort();
-  }, [selectedMonth]);
+  }, [selectedMonth, channel]);
 
   return (
     <div className="space-y-5">
@@ -879,6 +899,31 @@ export default function PnLPage() {
       {/* Filter bar */}
       <div className="flex flex-wrap gap-3 items-center">
         <MonthYearPicker value={selectedMonth} onChange={setSelectedMonth} />
+
+        {/* Channel filter */}
+        <div className="flex items-center gap-1">
+          {CHANNELS.map((c) => (
+            <button
+              key={c}
+              onClick={() => setChannel(c)}
+              className="px-3 py-1.5 text-xs font-medium transition-all"
+              style={{ borderRadius: 22, ...pillStyle(channel === c) }}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+
+        {/* Expenses global note */}
+        {channel !== "ALL" && (
+          <p className="text-xs w-full" style={{ color: "#8a8a8a" }}>
+            <Info
+              size={11}
+              style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }}
+            />
+            Expenses are global and not filtered by channel.
+          </p>
+        )}
       </div>
 
       {/* Content */}
