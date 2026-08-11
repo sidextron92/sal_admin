@@ -22,6 +22,7 @@ import {
   Wrench,
   GitCompare,
   Eye,
+  Calculator,
 } from "lucide-react";
 import {
   Tooltip,
@@ -63,6 +64,7 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Competition Brands", href: "/dashboard/tools/product-comparison", icon: GitCompare, built: true },
       { label: "Competition Products", href: "/dashboard/tools/competition-products", icon: BarChart2, built: true },
       { label: "Visualizer", href: "/dashboard/tools/visualizer", icon: Eye, built: true },
+      { label: "Price Calculator", href: "/dashboard/tools/price-calculator", icon: Calculator, built: true },
     ],
   },
   {
